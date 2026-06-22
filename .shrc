@@ -1,0 +1,5 @@
+#!/bin/sh
+PS1='\[\e[0m\]\w \[\e[1;31m\]ϕ\[\e[0m\] '
+
+alias ls="ls --color --group-directories-first" 
+alias sudo="doas"
