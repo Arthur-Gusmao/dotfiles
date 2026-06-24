@@ -1,10 +1,14 @@
 export PLAN9="/opt/plan9"
 export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$HOME/bin:$PATH"
 
-export EDITOR=vis
-export VISUAL=vis
+export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
-export BROWSER=qutebrowser
+export EDITOR=vim
+export VISUAL=vim
+export TERMINAL=foot
+
+export BROWSER=firefox
 
 export LANG=en_US.UTF-8
 export LC_ALL=C.UTF-8
@@ -19,4 +23,4 @@ export XDG_STATE_HOME="$HOME/.local/state"
 
 export QTWEBENGINE_FORCE_USE_GBM=0
 
-export ENV="$HOME/.shrc"
+export ENV="$HOME/.mkshrc"

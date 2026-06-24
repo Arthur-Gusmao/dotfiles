@@ -1,0 +1,68 @@
+# ~/.mkshrc
+
+HISTFILE=~/.mksh_history
+HISTSIZE=10000
+set -o emacs
+
+_pdir() {
+    local d=${PWD#"$HOME"}
+    [ "$d" = "$PWD" ] && print -rn "$PWD" || print -rn "~$d"
+}
+
+_vcs() {
+    local b
+    # jujutsu tem prioridade
+    b=$(jj log -r @ --no-graph -T 'if(bookmarks, "jj:" ++ bookmarks.join("|"), "jj:" ++ change_id.short(6))' 2>/dev/null)
+    [ -n "$b" ] && { print -rn " $b"; return; }
+    # git fallback
+    b=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+    [ -n "$b" ] && print -rn " git:$b"
+}
+
+# Sintaxe oficial do mksh: \1=delimitador Ctrl-A, \r após o primeiro \1
+PS1=$'\1\r\1\e[1;34m\1$(_pdir)\1\e[0m\1$(_vcs) > '
+
+PS2='> '
+
+
+alias ls='ls --group-directories-first --color=always'
+alias ll='ls --group-directories-first -lh --color=always'
+alias la='ls --group-directories-first -lah --color=always'
+alias grep='grep --color=always'
+alias diff='diff --color=always'
+alias cp='cp -i'
+alias mv='mv -i'
+alias rm='rm -i'
+alias mkdir='mkdir -p'
+alias ..='cd ..'
+alias ...='cd ../..'
+
+mkd() { mkdir -p "$1" && cd "$1"; }
+
+up() {
+    local n="${1:-1}"
+    local p=''
+    while [ "$n" -gt 0 ]; do
+        p="../$p"
+        n=$((n - 1))
+    done
+    cd "$p"
+}
+
+ex() {
+    case "$1" in
+        *.tar.bz2)  tar xjf "$1"   ;;
+        *.tar.gz)   tar xzf "$1"   ;;
+        *.tar.xz)   tar xJf "$1"   ;;
+        *.tar.zst)  tar --zstd -xf "$1" ;;
+        *.tar)      tar xf "$1"    ;;
+        *.bz2)      bunzip2 "$1"   ;;
+        *.gz)       gunzip "$1"    ;;
+        *.xz)       unxz "$1"     ;;
+        *.zip)      unzip "$1"    ;;
+        *.zst)      zstd -d "$1"  ;;
+        *)          echo "extract: formato não reconhecido: $1" ;;
+    esac
+}
+
+bind '^L=clear-screen'
