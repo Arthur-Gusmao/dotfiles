@@ -6,7 +6,7 @@ export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
 export EDITOR=vim
 export VISUAL=vim
-export TERMINAL=foot
+export TERMINAL=havoc
 
 export BROWSER=firefox
 
@@ -24,3 +24,12 @@ export XDG_STATE_HOME="$HOME/.local/state"
 export QTWEBENGINE_FORCE_USE_GBM=0
 
 export ENV="$HOME/.mkshrc"
+
+# Let sh(1) know it's at home, despite /home being a symlink.
+if [ "$PWD" != "$HOME" ] && [ "$PWD" -ef "$HOME" ] ; then cd ; fi
+
+# Query terminal size; useful for serial lines.
+if [ -x /usr/bin/resizewin ] ; then /usr/bin/resizewin -z ; fi
+
+# Display a random cookie on each login.
+if [ -x /usr/bin/fortune ] ; then /usr/bin/fortune freebsd-tips ; fi
