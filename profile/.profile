@@ -1,4 +1,3 @@
-export PLAN9="/opt/plan9"
 export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$HOME/bin:$PATH"
 
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
@@ -23,13 +22,12 @@ export XDG_STATE_HOME="$HOME/.local/state"
 
 export QTWEBENGINE_FORCE_USE_GBM=0
 
+export CLICOLOR=1
+
 export ENV="$HOME/.mkshrc"
 
-# Let sh(1) know it's at home, despite /home being a symlink.
 if [ "$PWD" != "$HOME" ] && [ "$PWD" -ef "$HOME" ] ; then cd ; fi
 
-# Query terminal size; useful for serial lines.
 if [ -x /usr/bin/resizewin ] ; then /usr/bin/resizewin -z ; fi
 
-# Display a random cookie on each login.
 if [ -x /usr/bin/fortune ] ; then /usr/bin/fortune freebsd-tips ; fi

@@ -2,7 +2,11 @@
 
 HISTFILE=~/.mksh_history
 HISTSIZE=10000
+
+set -o trackall
+set -o utf8-mode
 set -o emacs
+set -o markdirs
 
 _pdir() {
     local d=${PWD#"$HOME"}
@@ -21,6 +25,7 @@ PS1=$'\1\r\1\e[1;34m\1$(_pdir)\1\e[0m\1$(_vcs) > '
 
 PS2='> '
 
+PS4='[$EPOCHREALTIME] '
 
 alias ls='ls --group-directories-first --color=always'
 alias ll='ls --group-directories-first -lh --color=always'
@@ -37,6 +42,9 @@ alias g='grep -Ei'
 alias cp='cp -ip'
 alias mv='mv -i'
 alias rm='rm -i'
+alias tn='tmux new-session -s'
+alias tl='tmux list-sessions'
+alias ta='tmux attach-session'
 
 mkd() { mkdir -p "$1" && cd "$1"; }
 
@@ -69,6 +77,5 @@ ex() {
 bind '^L=clear-screen'
 bind '^XA=search-history-up'
 bind '^XB=search-history-down'
-
 bind '^X5~=beginning-of-line'
 bind '^X6~=end-of-line'
