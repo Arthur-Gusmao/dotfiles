@@ -26,6 +26,10 @@ export CLICOLOR=1
 
 export ENV="$HOME/.mkshrc"
 
+if [ -f "$HOME/.secrets" ]; then
+	. "$HOME/.secrets"
+fi
+
 if [ "$PWD" != "$HOME" ] && [ "$PWD" -ef "$HOME" ] ; then cd ; fi
 
 if [ -x /usr/bin/resizewin ] ; then /usr/bin/resizewin -z ; fi
