@@ -123,21 +123,14 @@ done
 riverctl focus-follows-cursor normal
 
 # ============================================================
-# Regras de janela (eram exemplos placeholder no seu dwl - troque pelos apps reais)
-# ============================================================
 # riverctl rule-add -app-id "Gimp"    float
 # riverctl rule-add -app-id "firefox" tags 256   # tag 9 (bit 1<<8)
 
 # ============================================================
-# Autostart (autostart[] do dwl)
-# ============================================================
 wbg /home/aw/Pictures/Wallpapers/5lG.jpg &
 wlr-randr --output DP-1 --mode 1920x1080@100Hz &
+dbus-update-activation-environment --systemd --all
 
-# ============================================================
-# Layout generator: wideriver no lugar do tile/monocle nativos do dwl
-# mfact=0.55, nmaster=1 (MonitorRule do dwl)
-# smart gaps/borders = janela unica some com gap/borda (era smartborders=1)
 # ============================================================
 riverctl default-layout wideriver
 wideriver \
