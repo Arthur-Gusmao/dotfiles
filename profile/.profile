@@ -1,18 +1,18 @@
-#if test -z "${XDG_RUNTIME_DIR}"; then
-    #export XDG_RUNTIME_DIR=/run/user/$(id -ru)
-#fi
-#
-#if test -d "${XDG_RUNTIME_DIR}"; then
-    #perms="$(stat -c '%a %u' "${XDG_RUNTIME_DIR}")"
-    #if [ "${perms}" != "700 $(id -ru)" ]; then
-        #unset XDG_RUNTIME_DIR
-        #echo "WARNING! XDG_RUNTIME_DIR has incorrect permissions"
-    #fi
-#else
-    #mkdir -p "${XDG_RUNTIME_DIR}"
-    #chmod 0700 "${XDG_RUNTIME_DIR}"
-#fi
-#
+if test -z "${XDG_RUNTIME_DIR}"; then
+    export XDG_RUNTIME_DIR=/run/user/$(id -ru)
+fi
+
+if test -d "${XDG_RUNTIME_DIR}"; then
+    perms="$(stat -c '%a %u' "${XDG_RUNTIME_DIR}")"
+    if [ "${perms}" != "700 $(id -ru)" ]; then
+        unset XDG_RUNTIME_DIR
+        echo "WARNING! XDG_RUNTIME_DIR has incorrect permissions"
+    fi
+else
+    mkdir -p "${XDG_RUNTIME_DIR}"
+    chmod 0700 "${XDG_RUNTIME_DIR}"
+fi
+
 export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$HOME/bin:$PATH"
 
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
@@ -29,7 +29,7 @@ export LANG=en_US.UTF-8
 export LC_ALL=C.UTF-8
 
 export PAGER=less
-export LESS='-R --use-color'
+export LESS='-R'
 
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"

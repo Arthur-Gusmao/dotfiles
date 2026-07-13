@@ -10,3 +10,4 @@ vis.events.subscribe(vis.events.WIN_OPEN, function(win)
 	vis:command('set relativenumber')
 	vis:command('set ignorecase on')
 end)
+

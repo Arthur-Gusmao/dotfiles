@@ -7,7 +7,6 @@ riverctl border-color-unfocused 0x181616
 riverctl border-color-urgent 0xff5d62
 riverctl border-width 1
 
-# cursor_theme "plan9", size 24
 riverctl xcursor-theme plan9 24
 
 # ============================================================
@@ -18,13 +17,10 @@ riverctl set-repeat 50 250
 riverctl map normal Super+Shift Return spawn havoc
 riverctl map normal Super P spawn 'wmenu-run -i -l 5 -p "run:" -f "IosevkaTerm Nerd Font 14" -N "#181616" -n "#c5c9c5" -M "#282727" -m "#c4b28a" -S "#282727" -s "#c4b28a"'
 
-# flatcmd: wmenu pra apps flatpak (era Shift+P no dwl)
 riverctl map normal Super+Shift P spawn '/home/aw/.local/bin/flatpak-wmenu.sh'
 
-# qutemenucmd (era Super+W no dwl)
 riverctl map normal Super W spawn '/home/aw/.local/bin/wmenu-qutebrowser.sh'
 
-# screenshotcmd (era Super+Shift+S no dwl)
 riverctl map normal Super+Shift S spawn 'grim -g "$(slurp)" - | wl-copy'
 
 riverctl map normal Super+Shift C close
@@ -44,11 +40,11 @@ riverctl map normal Super+Shift Comma send-to-output previous
 
 riverctl map normal Super Return zoom
 
-riverctl map normal Super I send-layout-cmd wideriver "--count +1"
-riverctl map normal Super D send-layout-cmd wideriver "--count -1"
+riverctl map normal Super I send-layout-cmd rivertile "main-count +1"
+riverctl map normal Super D send-layout-cmd rivertile "main-count -1"
 
-riverctl map normal Super H send-layout-cmd wideriver "--ratio -0.05"
-riverctl map normal Super L send-layout-cmd wideriver "--ratio +0.05"
+riverctl map normal Super H send-layout-cmd rivertile "main-ratio -0.05"
+riverctl map normal Super L send-layout-cmd rivertile "main-ratio +0.05"
 
 riverctl map normal Super+Alt H move left 100
 riverctl map normal Super+Alt J move down 100
@@ -90,13 +86,14 @@ riverctl map normal Super+Shift Space toggle-float
 
 riverctl map normal Super E toggle-fullscreen
 
-riverctl map normal Super T send-layout-cmd wideriver "--layout left"
-riverctl map normal Super M send-layout-cmd wideriver "--layout monocle"
+riverctl map normal Super T send-layout-cmd rivertile "main-location left"
+# rivertile não tem layout "monocle" nativo — use toggle-fullscreen (Super E) como alternativa
+# riverctl map normal Super M send-layout-cmd rivertile "main-location monocle"
 
-riverctl map normal Super Up    send-layout-cmd wideriver "--layout top"
-riverctl map normal Super Right send-layout-cmd wideriver "--layout right"
-riverctl map normal Super Down  send-layout-cmd wideriver "--layout bottom"
-riverctl map normal Super Left  send-layout-cmd wideriver "--layout left"
+riverctl map normal Super Up    send-layout-cmd rivertile "main-location top"
+riverctl map normal Super Right send-layout-cmd rivertile "main-location right"
+riverctl map normal Super Down  send-layout-cmd rivertile "main-location bottom"
+riverctl map normal Super Left  send-layout-cmd rivertile "main-location left"
 
 riverctl declare-mode passthrough
 riverctl map normal Super F11 enter-mode passthrough
@@ -106,7 +103,6 @@ for mode in normal locked
 do
     riverctl map $mode None XF86Eject spawn 'eject -T'
 
-    # volume via wpctl, igual seu dwl (upvol/downvol/mutevol)
     riverctl map $mode None XF86AudioRaiseVolume  spawn '/usr/bin/wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+'
     riverctl map $mode None XF86AudioLowerVolume  spawn '/usr/bin/wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-'
     riverctl map $mode None XF86AudioMute         spawn '/usr/bin/wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle'
@@ -123,28 +119,17 @@ done
 riverctl focus-follows-cursor normal
 
 # ============================================================
-# riverctl rule-add -app-id "Gimp"    float
-# riverctl rule-add -app-id "firefox" tags 256   # tag 9 (bit 1<<8)
-
-# ============================================================
-wbg /home/aw/Pictures/Wallpapers/5lG.jpg &
+wbg /home/aw/Wallpapers/5lG.jpg &
 wlr-randr --output DP-1 --mode 1920x1080@100Hz &
 dbus-update-activation-environment --systemd --all
+openrc --user gui
+riverctl spawn "$HOME/.config/river/bar"
 
 # ============================================================
-riverctl default-layout wideriver
-wideriver \
-    --layout left \
-    --count-master 1 \
-    --ratio-master 0.55 \
-    --smart-gaps \
-    --inner-gaps 0 \
-    --outer-gaps 0 \
-    --border-width 1 \
-    --border-width-monocle 0 \
-    --border-width-smart-gaps 0 \
-    --border-color-focused "0xc4b28a" \
-    --border-color-focused-monocle "0xc4b28a" \
-    --border-color-unfocused "0x181616" \
-    --log-threshold info \
-    > "/tmp/wideriver.${XDG_VTNR}.${USER}.log" 2>&1 &
+riverctl default-layout rivertile
+rivertile \
+    -view-padding 0 \
+    -outer-padding 0 \
+    -main-location left \
+    -main-ratio 0.55 \
+    -main-count 1 &
