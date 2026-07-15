@@ -1,31 +1,32 @@
-# ~/.mkshrc
+# ~/.ashrc
 
-HISTFILE=~/.mksh_history
+HISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/ash_history"
 HISTSIZE=10000
 
-set -o trackall
-set -o utf8-mode
-set -o emacs
-set -o markdirs
+ESC=$(printf '\033')
 
 _pdir() {
-    local d=${PWD#"$HOME"}
-    [ "$d" = "$PWD" ] && print -rn "$PWD" || print -rn "~$d"
+    d=${PWD#"$HOME"}
+    if [ "$d" = "$PWD" ]; then
+        printf '%s' "$PWD"
+    else
+        printf '~%s' "$d"
+    fi
 }
 
 _vcs() {
-    local b
     b=$(jj log -r @ --no-graph -T 'if(bookmarks, "jj:" ++ bookmarks.join("|"), "jj:" ++ change_id.short(6))' 2>/dev/null)
-    [ -n "$b" ] && { print -rn " $b"; return; }
+    if [ -n "$b" ]; then
+        printf ' %s' "$b"
+        return
+    fi
     b=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
-    [ -n "$b" ] && print -rn " git:$b"
+    [ -n "$b" ] && printf ' git:%s' "$b"
 }
 
-PS1=$'\1\r\1\e[1;34m\1$(_pdir)\1\e[0m\1$(_vcs) > '
-
+# PS1 é reavaliado a cada prompt pelo ash, incluindo $(...) e variáveis
+PS1='${ESC}[1;34m$(_pdir)${ESC}[0m$(_vcs) > '
 PS2='> '
-
-PS4='[$EPOCHREALTIME] '
 
 alias ls='ls --group-directories-first --color=always'
 alias ll='ls --group-directories-first -lh --color=always'
@@ -35,7 +36,7 @@ alias diff='diff --color=always'
 alias mkdir='mkdir -p'
 alias ..='cd ..'
 alias ...='cd ../..'
-alias h='fc -l'
+alias h='history'
 alias j=jobs
 alias m="${PAGER:-less}"
 alias g='grep -Ei'
@@ -50,8 +51,8 @@ alias sudo='doas'
 mkd() { mkdir -p "$1" && cd "$1"; }
 
 up() {
-    local n="${1:-1}"
-    local p=''
+    n="${1:-1}"
+    p=''
     while [ "$n" -gt 0 ]; do
         p="../$p"
         n=$((n - 1))
@@ -68,15 +69,9 @@ ex() {
         *.tar)      tar xf "$1"    ;;
         *.bz2)      bunzip2 "$1"   ;;
         *.gz)       gunzip "$1"    ;;
-        *.xz)       unxz "$1"     ;;
-        *.zip)      unzip "$1"    ;;
-        *.zst)      zstd -d "$1"  ;;
+        *.xz)       unxz "$1"      ;;
+        *.zip)      unzip "$1"     ;;
+        *.zst)      zstd -d "$1"   ;;
         *)          echo "extract: formato não reconhecido: $1" ;;
     esac
 }
-
-bind '^L=clear-screen'
-bind '^XA=search-history-up'
-bind '^XB=search-history-down'
-bind '^X5~=beginning-of-line'
-bind '^X6~=end-of-line'

@@ -25,11 +25,11 @@ export TERMINAL=havoc
 
 export BROWSER=firefox
 
-export LANG=en_US.UTF-8
 export LC_ALL=C.UTF-8
 
 export PAGER=less
 export LESS='-R'
+export LESSHISTFILE="$XDG_STATE_HOME/less/history"
 
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"
@@ -40,7 +40,7 @@ export QTWEBENGINE_FORCE_USE_GBM=0
 
 export CLICOLOR=1
 
-export ENV="$HOME/.mkshrc"
+export ENV="$HOME/.ashrc"
 
 if [ -f "$HOME/.secrets" ]; then
 	. "$HOME/.secrets"
@@ -48,6 +48,9 @@ fi
 
 if [ "$PWD" != "$HOME" ] && [ "$PWD" -ef "$HOME" ] ; then cd ; fi
 
-if [ -x /usr/bin/resizewin ] ; then /usr/bin/resizewin -z ; fi
-
-if [ -x /usr/bin/fortune ] ; then /usr/bin/fortune freebsd-tips ; fi
+case "$-" in
+    *i*)
+        [ -x /usr/bin/resizewin ] && /usr/bin/resizewin -z
+        [ -x /usr/bin/fortune ] && /usr/bin/fortune freebsd-tips
+        ;;
+esac
