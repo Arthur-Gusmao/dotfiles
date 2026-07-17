@@ -4,9 +4,9 @@ FIFO="$XDG_RUNTIME_DIR/sandbar"
 [ -e "$FIFO" ] && rm -f "$FIFO"
 mkfifo "$FIFO"
 
-FG="#c5c9c5"
-GOLD="#c4b28a"
-DIM="#727169"
+FG="#bbbbbb"
+ACCENT="#005577"
+DIM="#444444"
 
 ICON_CPU="$(printf '\357\213\233')"   # microchip
 ICON_MEM="$(printf '\357\224\270')"   # memory chip
@@ -38,7 +38,7 @@ vol() {
   fi
 }
 display() {
-  echo "all status ^fg($GOLD)${ICON_CPU}  ^fg($FG)${cpu}   ^fg($DIM)|   ^fg($GOLD)${ICON_MEM}  ^fg($FG)${memory}   ^fg($DIM)|   ^fg($GOLD)${ICON_DISK}  ^fg($FG)${disk}   ^fg($DIM)|   ^fg($GOLD)${vol_icon}  ^fg($FG)${vol}   ^fg($DIM)|   ^fg($GOLD)${ICON_CLOCK}  ^fg($FG)${datetime}^fg()" >"$FIFO"
+  echo "all status ^fg($ACCENT)${ICON_CPU}  ^fg($FG)${cpu}   ^fg($DIM)|   ^fg($ACCENT)${ICON_MEM}  ^fg($FG)${memory}   ^fg($DIM)|   ^fg($ACCENT)${ICON_DISK}  ^fg($FG)${disk}   ^fg($DIM)|   ^fg($ACCENT)${vol_icon}  ^fg($FG)${vol}   ^fg($DIM)|   ^fg($ACCENT)${ICON_CLOCK}  ^fg($FG)${datetime}^fg()" >"$FIFO"
 }
 
 status_loop() {
@@ -59,12 +59,12 @@ trap 'kill "$STATUS_PID" 2>/dev/null; rm -f "$FIFO"' EXIT INT TERM
 
 while cat "$FIFO"; do :; done | sandbar \
   -font "IosevkaTerm Nerd Font:14" \
-  -active-fg-color "$GOLD" \
-  -active-bg-color "#282727" \
+  -active-fg-color "#eeeeee" \
+  -active-bg-color "$ACCENT" \
   -inactive-fg-color "$FG" \
-  -inactive-bg-color "#181616" \
-  -urgent-fg-color "#181616" \
-  -urgent-bg-color "#ff5d62" \
-  -title-fg-color "$GOLD" \
-  -title-bg-color "#282727"
+  -inactive-bg-color "#222222" \
+  -urgent-fg-color "#222222" \
+  -urgent-bg-color "#ee0000" \
+  -title-fg-color "#eeeeee" \
+  -title-bg-color "$DIM"
 

@@ -28,9 +28,6 @@ _vcs() {
 PS1='${ESC}[1;34m$(_pdir)${ESC}[0m$(_vcs) > '
 PS2='> '
 
-alias ls='ls --group-directories-first --color=always'
-alias ll='ls --group-directories-first -lh --color=always'
-alias la='ls --group-directories-first -lah --color=always'
 alias grep='grep --color=always'
 alias diff='diff --color=always'
 alias mkdir='mkdir -p'

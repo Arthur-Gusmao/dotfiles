@@ -1,10 +1,10 @@
 #!/bin/sh
 
 # ============================================================
-riverctl background-color 0x0d0c0c
-riverctl border-color-focused 0xc4b28a
-riverctl border-color-unfocused 0x181616
-riverctl border-color-urgent 0xff5d62
+riverctl background-color 0x222222
+riverctl border-color-focused 0x005577
+riverctl border-color-unfocused 0x444444
+riverctl border-color-urgent 0xee0000
 riverctl border-width 1
 
 riverctl xcursor-theme plan9 24
@@ -15,7 +15,7 @@ riverctl set-repeat 50 250
 
 # ============================================================
 riverctl map normal Super+Shift Return spawn havoc
-riverctl map normal Super P spawn 'wmenu-run -i -l 5 -p "run:" -f "IosevkaTerm Nerd Font 14" -N "#181616" -n "#c5c9c5" -M "#282727" -m "#c4b28a" -S "#282727" -s "#c4b28a"'
+riverctl map normal Super P spawn 'wmenu-run -i -l 5 -p "run:" -f "IosevkaTerm Nerd Font 14" -N "#222222" -n "#bbbbbb" -M "#444444" -m "#444444" -S "#005577" -s "#eeeeee"'
 
 riverctl map normal Super+Shift P spawn '/home/aw/.local/bin/flatpak-wmenu.sh'
 
@@ -122,6 +122,7 @@ riverctl focus-follows-cursor normal
 wbg /home/aw/Wallpapers/5lG.jpg &
 wlr-randr --output DP-1 --mode 1920x1080@100Hz &
 dbus-update-activation-environment --systemd --all
+mako -c "$HOME/.config/mako/config" &
 openrc --user gui
 riverctl spawn "$HOME/.config/river/bar"
 
