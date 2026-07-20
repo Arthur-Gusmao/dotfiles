@@ -1,10 +1,10 @@
 #!/bin/sh
 
 # ============================================================
-riverctl background-color 0x222222
-riverctl border-color-focused 0x005577
-riverctl border-color-unfocused 0x444444
-riverctl border-color-urgent 0xee0000
+riverctl background-color 0x282828
+riverctl border-color-focused 0x83a598
+riverctl border-color-unfocused 0x665c54
+riverctl border-color-urgent 0xfb4934
 riverctl border-width 1
 
 riverctl xcursor-theme plan9 24
@@ -15,7 +15,7 @@ riverctl set-repeat 50 250
 
 # ============================================================
 riverctl map normal Super+Shift Return spawn havoc
-riverctl map normal Super P spawn 'wmenu-run -i -l 5 -p "run:" -f "IosevkaTerm Nerd Font 14" -N "#222222" -n "#bbbbbb" -M "#444444" -m "#444444" -S "#005577" -s "#eeeeee"'
+riverctl map normal Super P spawn 'wmenu-run -i -l 5 -p "run:" -f "IosevkaTerm Nerd Font 14" -N "#282828" -n "#ebdbb2" -M "#665c54" -m "#665c54" -S "#83a598" -s "#fbf1c7"'
 
 riverctl map normal Super+Shift P spawn '/home/aw/.local/bin/flatpak-wmenu.sh'
 

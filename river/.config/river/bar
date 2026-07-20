@@ -4,9 +4,9 @@ FIFO="$XDG_RUNTIME_DIR/sandbar"
 [ -e "$FIFO" ] && rm -f "$FIFO"
 mkfifo "$FIFO"
 
-FG="#bbbbbb"
-ACCENT="#005577"
-DIM="#444444"
+FG="#ebdbb2"
+ACCENT="#83a598"
+DIM="#665c54"
 
 ICON_CPU="$(printf '\357\213\233')"   # microchip
 ICON_MEM="$(printf '\357\224\270')"   # memory chip
@@ -59,12 +59,11 @@ trap 'kill "$STATUS_PID" 2>/dev/null; rm -f "$FIFO"' EXIT INT TERM
 
 while cat "$FIFO"; do :; done | sandbar \
   -font "IosevkaTerm Nerd Font:14" \
-  -active-fg-color "#eeeeee" \
+  -active-fg-color "#fbf1c7" \
   -active-bg-color "$ACCENT" \
   -inactive-fg-color "$FG" \
-  -inactive-bg-color "#222222" \
-  -urgent-fg-color "#222222" \
-  -urgent-bg-color "#ee0000" \
-  -title-fg-color "#eeeeee" \
+  -inactive-bg-color "#282828" \
+  -urgent-fg-color "#282828" \
+  -urgent-bg-color "#fb4934" \
+  -title-fg-color "#fbf1c7" \
   -title-bg-color "$DIM"
-
