@@ -1,7 +1,7 @@
 # ~/.rc
 
-HISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/sh_history"
-HISTSIZE=10000
+# ---------------------------------------------------------------------------
+HISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/history"
 ESC=$(printf '\033')
 
 umask 022
@@ -33,22 +33,18 @@ _pdir() {
 }
 
 _vcs() {
-    b=$(jj log -r @ --no-graph -T 'if(bookmarks, "jj:" ++ bookmarks.join("|"), "jj:" ++ change_id.short(6))' 2>/dev/null)
-    if [ -n "$b" ]; then
-        empty=$(jj log -r @ --no-graph -T 'if(empty, "1", "0")' 2>/dev/null)
-        if [ "$empty" = "0" ]; then
-            printf ' %s%s%s*%s' "${ESC}[1;33m" "$b" "${ESC}[1;31m" "${ESC}[0m"
-        else
-            printf ' %s%s%s' "${ESC}[1;33m" "$b" "${ESC}[0m"
-        fi
+    vb=$(jj log -r @ --no-graph --color=always \
+        -T 'separate(" ", bookmarks) ++ if(bookmarks, " ", "") ++ change_id.shortest(8) ++ if(empty, "", " +")' \
+        2>/dev/null)
+    if [ -n "$vb" ]; then
+        printf ' %sjj:%s%s%s' "${ESC}[1;36m" "${ESC}[0m" "$vb" "${ESC}[0m"
         return
     fi
     b=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
     if [ -n "$b" ]; then
-        if git diff --quiet 2>/dev/null && git diff --cached --quiet 2>/dev/null; then
-            printf ' %sgit:%s%s' "${ESC}[1;35m" "$b" "${ESC}[0m"
-        else
-            printf ' %sgit:%s%s*%s' "${ESC}[1;35m" "$b" "${ESC}[1;31m" "${ESC}[0m"
+        printf ' %sgit:%s%s%s' "${ESC}[1;35m" "${ESC}[1;33m" "$b" "${ESC}[0m"
+        if ! git diff --quiet 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then
+            printf '%s*%s' "${ESC}[1;31m" "${ESC}[0m"
         fi
     fi
 }

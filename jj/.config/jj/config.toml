@@ -1,0 +1,9 @@
+#:schema https://docs.jj-vcs.dev/latest/config-schema.json
+
+[user]
+name = "Arthur"
+email = "arthurgusmao@proton.me"
+
+[ui]
+default-command = "log"
+paginate = "never"

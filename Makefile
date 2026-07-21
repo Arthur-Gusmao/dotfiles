@@ -17,7 +17,7 @@ LN       = ln -sfn
 ETCDIR   = /etc
 
 # Regular packages (go into $(HOME))
-PACKAGES = foot havoc kak shell profile qutebrowser tmux vis river mako
+PACKAGES = foot havoc kak shell profile qutebrowser tmux vis river mako gtk jj
 
 .PHONY: all install link unlink uninstall relink status list clean help \
 	      doas-install doas-uninstall doas-diff $(PACKAGES)
