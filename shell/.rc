@@ -15,10 +15,15 @@ if [ -n "$KSH_VERSION" ]; then
     set -o trackall
     set -o pipefail
     set -o markdirs
+    set -o utf8-mode
 
     set -A complete_git_1 -- status add commit push pull log diff branch checkout rebase
     set -A complete_jj_1 -- status log diff commit describe new edit rebase bookmark
     set -A complete_kill_1 -- -9 -HUP -TERM
+
+    export HISTCONTROL=ignoredups:ignorespace
+
+    bind -m '^[s=^Adoas ^E'
 fi
 
 # ---------------------------------------------------------------------------
@@ -50,8 +55,8 @@ _vcs() {
 }
 
 _jobs() {
-    n=$(jobs -p 2>/dev/null | wc -l | tr -d ' ')
-    [ "$n" -gt 0 ] 2>/dev/null && printf ' %s[%s]%s' "${ESC}[1;33m" "$n" "${ESC}[0m"
+    set -- $(jobs -p 2>/dev/null)
+    [ "$#" -gt 0 ] && printf ' %s[%s]%s' "${ESC}[1;33m" "$#" "${ESC}[0m"
 }
 
 _prompt_line() {
@@ -71,6 +76,9 @@ PS1='${ESC}[1;34m$(_prompt_line)${ESC}[0m '
 PS2='> '
 
 # ---------------------------------------------------------------------------
+alias lc='/bin/ls'
+alias ls='ls -1 --group-directories-first'
+alias cls='print -n \\Ec'
 alias mkdir='mkdir -p'
 alias ..='cd ..'
 alias ...='cd ../..'
@@ -106,4 +114,13 @@ ex() {
         *.zst)      zstd -d "$1"   ;;
         *)          echo "extract: unrecognized format: $1" ;;
     esac
+}
+
+pushd() { cd "$1" && set -- "$OLDPWD" "$@"; DIRSTACK="$1${DIRSTACK:+:$DIRSTACK}"; }
+
+popd() {
+    [ -z "$DIRSTACK" ] && return 1
+    cd "${DIRSTACK%%:*}"
+    DIRSTACK="${DIRSTACK#*:}"
+    [ "$DIRSTACK" = "${DIRSTACK#*:}" ] && [ "$DIRSTACK" = "${DIRSTACK%%:*}" ] || :
 }

@@ -15,7 +15,7 @@ riverctl set-repeat 50 250
 
 # ============================================================
 riverctl map normal Super+Shift Return spawn havoc
-riverctl map normal Super P spawn 'wmenu-run -i -l 5 -p "run:" -f "IosevkaTerm Nerd Font 14" -N "#282828" -n "#ebdbb2" -M "#665c54" -m "#665c54" -S "#83a598" -s "#fbf1c7"'
+riverctl map normal Super P spawn 'wmenu-run -i -l 5 -p "run:" -f "IosevkaTerm Nerd Font 14" -N "#282828" -n "#ebdbb2" -M "#fe8019" -m "#282828" -S "#83a598" -s "#282828"'
 
 riverctl map normal Super+Shift P spawn '/home/aw/.local/bin/flatpak-wmenu.sh'
 
@@ -123,7 +123,7 @@ wbg /home/aw/Wallpapers/5lG.jpg &
 wlr-randr --output DP-1 --mode 1920x1080@100Hz &
 dbus-update-activation-environment --systemd --all
 mako -c "$HOME/.config/mako/config" &
-openrc --user gui
+openrc --user gui &
 riverctl spawn "$HOME/.config/river/bar"
 
 # ============================================================
