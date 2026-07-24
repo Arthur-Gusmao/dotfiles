@@ -22,7 +22,7 @@ else
 fi
 
 # ---------------------------------------------------------------------
-export PATH="$HOME/.local/bin::$HOME/bin:$PATH"
+export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/bin:$PATH"
 export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH"
 export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
 export CC=cc
