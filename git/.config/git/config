@@ -1,0 +1,40 @@
+[user]
+	name = Arthur
+	email = arthurgusmao@proton.me
+
+[core]
+	editor = vis
+	autocrlf = input
+	pager = less -R
+
+[merge]
+	conflictstyle = diff3
+
+[diff]
+	colorMoved = default
+
+[push]
+	default = current
+	autoSetupRemote = true
+
+[pull]
+	rebase = true
+
+[rebase]
+	autoStash = true
+	autoSquash = true
+
+[alias]
+	st = status -sb
+	co = checkout
+	br = branch
+	df = diff
+	lg = log --oneline --graph --decorate --all -20
+	unstage = reset HEAD --
+	last = log -1 HEAD --stat
+	amend = commit --amend --no-edit
+	wip = !git add -A && git commit -m 'wip'
+	undo = reset --soft HEAD~1
+
+[color]
+	ui = auto
