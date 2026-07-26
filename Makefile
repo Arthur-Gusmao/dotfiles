@@ -1,147 +1,125 @@
-# dotfiles Makefile — symlink farm manager
+# dotfiles Makefile
 #
-# Each top-level directory (foot, mksh, kak, ...) mirrors the file
-# structure that should exist inside $(HOME). E.g.:
-#   foot/.config/foot/foot.ini  ->  $(HOME)/.config/foot/foot.ini
+# Each directory mirrors $HOME's structure.
+# e.g.  foot/.config/foot/foot.ini  ->  ~/.config/foot/foot.ini
 #
-# `doas` is handled separately: its content (doas.conf) goes to /etc,
-# so it requires privilege and is not part of the automatic `install`.
-#
-# Written in plain POSIX make (no GNUmake-isms like $(wildcard)/foreach)
-# so it works the same with bmake and gmake.
+# doas/doas.conf is special: it lives in /etc and must be a root-owned
+# COPY (not a symlink), so it's handled separately.
 
-PREFIX   = $(HOME)
-DESTDIR  =
-DOAS     = doas
-LN       = ln -sfn
-ETCDIR   = /etc
+PREFIX  = $(HOME)
+DOAS    = doas
+ETCDIR  = /etc
 
-# Regular packages (go into $(HOME))
-PACKAGES = foot havoc kak shell profile qutebrowser tmux vis river mako gtk jj
+PKGS = foot havoc kak profile qutebrowser tmux vis river mako gtk jj shell git
 
-.PHONY: all install link unlink uninstall relink status list clean help \
-	      doas-install doas-uninstall doas-diff $(PACKAGES)
+.PHONY: all install uninstall relink status list help \
+        doas-install doas-uninstall doas-diff clean $(PKGS)
 
 all: help
 
 help:
-	@echo "make install         - symlink all user packages into $(PREFIX)"
-	@echo "make uninstall       - remove the symlinks created by this Makefile"
-	@echo "make relink          - uninstall + install"
-	@echo "make status          - show what's linked and what's missing"
-	@echo "make list            - list available packages"
-	@echo "make <package>       - install a single package, e.g. make mksh"
-	@echo "make doas-install    - install a root-owned copy of doas/doas.conf into /etc"
-	@echo "make doas-uninstall  - remove /etc/doas.conf (only if it matches the repo copy)"
-	@echo "make doas-diff       - diff /etc/doas.conf against doas/doas.conf"
+	@echo "make install       symlink all packages into $(PREFIX)"
+	@echo "make uninstall     remove our symlinks"
+	@echo "make relink        uninstall + install"
+	@echo "make status        show linked / missing / conflict"
+	@echo "make list          list available packages"
+	@echo "make <pkg>         install one package (e.g. make foot)"
+	@echo "make doas-install  install /etc/doas.conf (root-owned copy)"
+	@echo "make doas-uninstall  remove /etc/doas.conf (only if matching)"
+	@echo "make doas-diff     diff installed vs repo doas.conf"
+	@echo "make clean         remove broken symlinks from $(PREFIX)"
 
 list:
-	@for p in $(PACKAGES) doas; do echo "$$p"; done
+	@echo $(PKGS) | tr ' ' '\n'
 
-install: link
+# ── packages ─────────────────────────────────────────────────────────
 
-link: $(PACKAGES)
+install: $(PKGS)
 
-# Generic rule: for each package, walk its files and symlink each one
-# to the corresponding destination inside $(PREFIX), creating parent
-# directories as needed. Never touches existing files that aren't our
-# own symlinks (avoids accidentally overwriting real configs).
-$(PACKAGES):
-	@test -d "$@" || { echo "==> package '$@' does not exist, skipping"; exit 0; }
-	@echo "==> linking $@"
+$(PKGS):
+	@test -d "$@" || { echo "==> $@: not found, skipping"; exit 0; }
+	@echo "==> $@"
 	@cd "$@" && find . -type f | while read -r f; do \
 	  rel=$${f#./}; \
-	  target="$(DESTDIR)$(PREFIX)/$$rel"; \
+	  dest="$(PREFIX)/$$rel"; \
 	  src="$$(pwd)/$$rel"; \
-	  mkdir -p "$$(dirname "$$target")"; \
-	  if [ -e "$$target" ] && [ ! -L "$$target" ]; then \
-	    echo "    SKIP (real file already exists): $$target"; \
-	  elif [ -L "$$target" ] && [ "$$(readlink "$$target")" = "$$src" ]; then \
-	    : ; \
+	  mkdir -p "$$(dirname "$$dest")"; \
+	  if [ -L "$$dest" ] && [ "$$(readlink "$$dest")" = "$$src" ]; then \
+	    continue; \
+	  elif [ -e "$$dest" ]; then \
+	    echo "    SKIP (exists): $$dest"; \
 	  else \
-	    $(LN) "$$src" "$$target"; \
-	    echo "    $$target -> $$src"; \
+	    ln -sfn "$$src" "$$dest"; \
+	    echo "    $$dest -> $$src"; \
 	  fi; \
 	done
 
-uninstall: unlink
-unlink:
-	@for p in $(PACKAGES); do \
+uninstall:
+	@for p in $(PKGS); do \
 	  test -d "$$p" || continue; \
-	  echo "==> unlinking $$p"; \
+	  echo "==> $$p"; \
 	  (cd "$$p" && find . -type f | while read -r f; do \
 	    rel=$${f#./}; \
-	    target="$(DESTDIR)$(PREFIX)/$$rel"; \
+	    dest="$(PREFIX)/$$rel"; \
 	    src="$$(pwd)/$$rel"; \
-	    if [ -L "$$target" ] && [ "$$(readlink "$$target")" = "$$src" ]; then \
-	      rm -v "$$target"; \
+	    if [ -L "$$dest" ] && [ "$$(readlink "$$dest")" = "$$src" ]; then \
+	      rm -v "$$dest"; \
 	    fi; \
 	  done); \
 	done
 
-relink: unlink link
+relink: uninstall install
 
-# Show current state: linked, missing, or conflicting
 status:
-	@for p in $(PACKAGES); do \
+	@for p in $(PKGS); do \
 	  test -d "$$p" || continue; \
 	  (cd "$$p" && find . -type f | while read -r f; do \
 	    rel=$${f#./}; \
-	    target="$(DESTDIR)$(PREFIX)/$$rel"; \
+	    dest="$(PREFIX)/$$rel"; \
 	    src="$$(pwd)/$$rel"; \
-	    if [ -L "$$target" ] && [ "$$(readlink "$$target")" = "$$src" ]; then \
-	      echo "OK       $$target"; \
-	    elif [ -e "$$target" ]; then \
-	      echo "CONFLICT $$target"; \
+	    if [ -L "$$dest" ] && [ "$$(readlink "$$dest")" = "$$src" ]; then \
+	      printf '  \033[32mOK\033[0m       %s\n' "$$dest"; \
+	    elif [ -e "$$dest" ]; then \
+	      printf '  \033[31mCONFLICT\033[0m %s\n' "$$dest"; \
 	    else \
-	      echo "MISSING  $$target"; \
+	      printf '  \033[33mMISSING\033[0m  %s\n' "$$dest"; \
 	    fi; \
 	  done); \
 	done
 
-# doas.conf lives in /etc, so we use doas to escalate privilege.
-# Left out of `install` on purpose: you run this manually.
-#
-# IMPORTANT: unlike the other packages, this is NOT a symlink. doas
-# refuses to load a config file that isn't owned by root with no
-# group/other write bit (checked on the resolved file, so a symlink to
-# something in your home directory fails with "not owned by root").
-# That's intentional: trusting a user-writable doas.conf would be a
-# privilege-escalation hole. So we install a root-owned COPY instead,
-# and you re-run `doas-install` whenever you edit doas/doas.conf in
-# the repo to push the change live.
-#
-# Bootstrap: if /etc/doas.conf doesn't exist yet, doas refuses to run
-# ANYTHING (chicken and egg, and intentional). In that case we fall
-# back to `su` just for this first time; after that doas works
-# normally and doas-install/doas-uninstall work without su.
+# ── doas (needs root) ───────────────────────────────────────────────
+
 doas-install:
 	@test -f doas/doas.conf || { echo "doas/doas.conf not found"; exit 1; }
+	@echo "==> $(ETCDIR)/doas.conf"
 	@if [ -e "$(ETCDIR)/doas.conf" ]; then \
-	  echo "==> installing $(ETCDIR)/doas.conf via doas (root-owned copy)"; \
-	  $(DOAS) install -o root -g root -m 0644 "$$(pwd)/doas/doas.conf" "$(ETCDIR)/doas.conf"; \
+	  $(DOAS) install -o root -g root -m 0644 \
+	    "$$(pwd)/doas/doas.conf" "$(ETCDIR)/doas.conf"; \
 	else \
-	  echo "==> $(ETCDIR)/doas.conf doesn't exist yet, doas can't self-bootstrap"; \
-	  echo "==> using su for the initial bootstrap"; \
-	  su -c "install -o root -g root -m 0644 \"$$(pwd)/doas/doas.conf\" \"$(ETCDIR)/doas.conf\""; \
+	  echo "    bootstrapping (no doas yet, using su)"; \
+	  su -c "install -o root -g root -m 0644 \
+	    '$$(pwd)/doas/doas.conf' '$(ETCDIR)/doas.conf'"; \
 	fi
-
-doas-diff:
-	@$(DOAS) diff -u "$(ETCDIR)/doas.conf" doas/doas.conf || true
 
 doas-uninstall:
 	@if [ -e "$(ETCDIR)/doas.conf" ] && cmp -s "$(ETCDIR)/doas.conf" doas/doas.conf; then \
 	  $(DOAS) rm -v "$(ETCDIR)/doas.conf"; \
 	else \
-	  echo "$(ETCDIR)/doas.conf differs from doas/doas.conf (or doesn't exist), leaving it alone"; \
-	  echo "run 'make doas-diff' to see what's different"; \
+	  echo "$(ETCDIR)/doas.conf differs or doesn't exist; run 'make doas-diff'"; \
 	fi
 
-# Remove broken symlinks inside $(PREFIX) that point back into this repo
+doas-diff:
+	@$(DOAS) diff -u "$(ETCDIR)/doas.conf" doas/doas.conf || true
+
+# ── cleanup ──────────────────────────────────────────────────────────
+
 clean:
-	@echo "==> looking for broken symlinks originating from this repo in $(PREFIX)"
-	@find "$(PREFIX)" -maxdepth 4 -xtype l 2>/dev/null | while read -r l; do \
-	  case "$$(readlink "$$l")" in \
-	    "$$(pwd)"/*) echo "    removing broken link: $$l"; rm -v "$$l" ;; \
+	@find "$(PREFIX)" -maxdepth 4 -type l ! -exec test -e {} \; -print 2>/dev/null | \
+	while read -r l; do \
+	  case "$$l" in \
+	    "$(PREFIX)/.config/opencode"*) ;; \
+	    *) case "$$(readlink "$$l")" in \
+	      "$$(pwd)"/*) echo "rm $$l"; rm "$$l" ;; \
+	    esac ;; \
 	  esac; \
 	done

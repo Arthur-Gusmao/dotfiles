@@ -15,11 +15,13 @@ riverctl set-repeat 50 250
 
 # ============================================================
 riverctl map normal Super+Shift Return spawn st-wl
-riverctl map normal Super P spawn 'wmenu-run -i -l 5 -p "run:" -f "IosevkaTerm Nerd Font 14" -N "#282828" -n "#ebdbb2" -M "#fe8019" -m "#282828" -S "#83a598" -s "#282828"'
+riverctl map normal Super P spawn 'mew-run -b'
 
 riverctl map normal Super+Shift P spawn '/home/aw/.local/bin/flatpak-wmenu.sh'
 
 riverctl map normal Super W spawn '/home/aw/.local/bin/wmenu-qutebrowser.sh'
+
+riverctl map normal Super N spawn 'st-wl -e noice'
 
 riverctl map normal Super+Shift S spawn 'grim -g "$(slurp)" - | wl-copy'
 

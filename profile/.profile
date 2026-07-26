@@ -33,7 +33,7 @@ export MAKEFLAGS="-j$(nproc)"
 export EDITOR=vis
 export VISUAL=vis
 export ABDUCO_CMD=mtm
-export TERMINAL=havoc
+export TERMINAL=st-wl
 export BROWSER=firefox
 export PAGER=less
 export MANPAGER="$PAGER"
@@ -43,16 +43,17 @@ export HISTSIZE=2047
 export FCEDIT=vis
 
 # ---------------------------------------------------------------------
-export LESS='MSF'
+export LESS='-MSFR'
 
 # ------------------------------------------------------------------------
 export MAIL="/var/mail/$(id -un)"
 export MAILCHECK=600
 
 # ------------------------------------------------------------------------
-export GIT_PAGER="$PAGER"
+export GIT_PAGER=cat
 export GIT_EDITOR="$EDITOR"
 export GIT_CONFIG_GLOBAL="$XDG_CONFIG_HOME/git/config"
+export GIT_SSH=dbclient
 
 # ---------------------------------------------------------------------
 export GNUPGHOME="$XDG_DATA_HOME/gnupg"
