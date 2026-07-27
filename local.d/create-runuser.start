@@ -1,0 +1,3 @@
+#!/bin/sh
+mkdir -p /run/user
+chmod 1777 /run/user

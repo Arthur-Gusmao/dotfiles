@@ -1,6 +1,9 @@
 # ~/.rc
 # ---------------------------------------------------------------------------
 HISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/history"
+ESC=$(printf '\033')
+SOH=$(printf '\001')
+STX=$(printf '\002')
 umask 022
 export CDPATH=".:$HOME:$HOME/Projects"
 # ---------------------------------------------------------------------------
@@ -21,35 +24,87 @@ if [ -n "$KSH_VERSION" ]; then
     bind -m '^[s=^Adoas ^E'
 fi
 # ---------------------------------------------------------------------------
-_prompt() {
-    typeset st="$?" d v
-    # directory
+_c() {
+    _c_out="${SOH}${ESC}[${1}m${STX}${2}${SOH}${ESC}[0m${STX}"
+}
+_pdir() {
+    typeset d
     d=${PWD#"$HOME"}
     [ "$d" = "$PWD" ] && d="$PWD" || d="~$d"
-    [ ${#d} -gt 40 ] && d="...${d#"${d%????????????????????????????????????}"}"
-    # vcs
-    v=''
-    if [ -d .jj ]; then
-        v=$(jj log -r @ --no-graph --template 'bookmarks ++ if(bookmarks, " ", "") ++ change_id.shortest(8)' 2>/dev/null)
-        [ -n "$v" ] && v=" jj:$v"
-    fi
-    if [ -z "$v" ] && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-        v=$(git branch --show-current 2>/dev/null)
-        [ -n "$v" ] && v=" git:$v"
-        git diff --quiet 2>/dev/null && git diff --cached --quiet 2>/dev/null || v="${v}*"
-    fi
-    # prompt
-    PS1=""
-    PS1="${PS1}\033[1;34m${d}"
-    [ -n "$v" ] && PS1="${PS1}\033[1;36m${v}"
-    if [ "$st" = 0 ]; then
-        PS1="${PS1}\033[1;32m ❯"
+    if [ ${#d} -gt 40 ]; then
+        _pdir_out="...${d#"${d%????????????????????????????????????}"}"
     else
-        PS1="${PS1}\033[1;31m ❯"
+        _pdir_out="$d"
     fi
-    PS1="${PS1}\033[0m "
 }
-PS1='$(_prompt; printf "%s" "$_ps1") '
+_vcs() {
+    typeset vb gitst b dirty line g1 g2
+    _vcs_out=''
+    if [ -d .jj ]; then
+        vb=$(jj log -r @ --no-graph --color=always \
+            -T 'separate(" ", bookmarks) ++ if(bookmarks, " ", "") ++ change_id.shortest(8) ++ if(empty, "", " +")' \
+            2>/dev/null)
+        if [ -n "$vb" ]; then
+            _c '1;36' "jj:$vb"
+            _vcs_out=" $_c_out"
+            return
+        fi
+    fi
+
+    gitst=$(git --no-optional-locks status --porcelain=v2 --branch 2>/dev/null) || return
+    [ -n "$gitst" ] || return
+
+    b=''
+    dirty=0
+    IFS='
+'
+    for line in $gitst; do
+        case $line in
+        '# branch.head '*)
+            b=${line#'# branch.head '}
+            ;;
+        [12u]*)
+            dirty=1
+            ;;
+        esac
+    done
+    unset IFS
+    [ -n "$b" ] || return
+
+    _c '1;35' 'git:'; g1=$_c_out
+    _c '1;33' "$b";   g2=$_c_out
+    _vcs_out=" $g1$g2"
+
+    if [ "$dirty" = 1 ]; then
+        _c '1;31' '*'
+        _vcs_out="$_vcs_out$_c_out"
+    fi
+}
+_jobs() {
+    typeset n
+    n=$(jobs -p 2>/dev/null | wc -l)
+    if [ "$n" -gt 0 ]; then
+        _c '1;33' "[$n]"
+        _jobs_out=" $_c_out"
+    else
+        _jobs_out=''
+    fi
+}
+_prompt_line() {
+    typeset st
+    st="$1"
+    _pdir
+    _vcs
+    _jobs
+    printf '%s%s%s ' "$_pdir_out" "$_vcs_out" "$_jobs_out"
+    if [ "$st" = 0 ]; then
+        _c '1;32' '❯'
+    else
+        _c '1;31' '❯'
+    fi
+    printf '%s' "$_c_out"
+}
+PS1='$(_c 1\;34 "$(_prompt_line $?)"; printf "%s" "$_c_out") '
 PS2='> '
 # ---------------------------------------------------------------------------
 alias lc='/bin/ls'

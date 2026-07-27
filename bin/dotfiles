@@ -1,0 +1,170 @@
+#!/bin/sh
+set -eu
+
+REPO="$(CDPATH='' cd "$(dirname "$0")/.." && pwd)"
+PREFIX="${HOME}"
+
+# Auto-discover packages: all dirs at repo root except system dirs
+PKGS=""
+for d in "$REPO"/*/; do
+    [ -d "$d" ] || continue
+    dname=$(basename "$d")
+    case "$dname" in
+        .git|doas|local.d|bin) continue ;;
+    esac
+    # Only include if dir has at least one file
+    if find "$d" -type f 2>/dev/null | head -n 1 | grep -q . >/dev/null 2>&1; then
+        PKGS="$PKGS $dname"
+    fi
+done
+
+# Colors (auto-disable when piped)
+BOLD=; DIM=; CYAN=; GREEN=; RED=; YELLOW=; NC=
+if [ -t 1 ]; then
+    BOLD=$(printf '\033[1m')
+    DIM=$(printf '\033[2m')
+    CYAN=$(printf '\033[36m')
+    GREEN=$(printf '\033[32m')
+    RED=$(printf '\033[31m')
+    YELLOW=$(printf '\033[33m')
+    NC=$(printf '\033[0m')
+fi
+
+usage() {
+    set -- $PKGS
+    COUNT=$#
+    printf "${BOLD}  ── dotfiles ────────────────────────────────────${NC}\n"
+    printf "  ${DIM}%d packages  ·  %s${NC}\n" "$COUNT" "$PREFIX"
+    printf "\n"
+    printf "${BOLD}  📦 Packages${NC}\n"
+    printf "    ${GREEN}install${NC}       Symlink all packages into ${DIM}%s${NC}\n" "$PREFIX"
+    printf "    ${GREEN}uninstall${NC}     Remove our symlinks\n"
+    printf "    ${GREEN}relink${NC}        Uninstall + install\n"
+    printf "    ${GREEN}status${NC}        Show link state ${DIM}(✓ / ✗ / ⚠)${NC}\n"
+    printf "    ${GREEN}list${NC}          List available packages\n"
+    printf "    ${GREEN}<pkg>${NC}         Install one package ${DIM}(e.g. foot)${NC}\n"
+    printf "    ${GREEN}clean${NC}         Remove broken symlinks from ${DIM}%s${NC}\n" "$PREFIX"
+    printf "\n"
+    printf "  ${DIM}For system commands: make help${NC}\n"
+    exit 0
+}
+
+install_pkg() {
+    pkg="$1"
+    dir="$REPO/$pkg"
+    if [ ! -d "$dir" ]; then
+        printf "  ${YELLOW}⚠${NC}  ${DIM}%s: not found, skipping${NC}\n" "$pkg"
+        return
+    fi
+    printf "  ${BOLD}${CYAN}─── %s ───${NC}\n" "$pkg"
+    cd "$dir"
+    find . -type f > /tmp/.dotfiles-$$
+    linked=0; skipped=0; unchanged=0
+    while read -r f; do
+        rel="${f#./}"
+        dest="$PREFIX/$rel"
+        src="$(pwd)/$rel"
+        mkdir -p "$(dirname "$dest")"
+        if [ -L "$dest" ] && [ "$(readlink "$dest")" = "$src" ]; then
+            unchanged=$((unchanged + 1))
+        elif [ -e "$dest" ]; then
+            printf "    ${DIM}SKIP${NC}  ${YELLOW}⚠${NC}  %s\n" "$dest"
+            skipped=$((skipped + 1))
+        else
+            ln -sfn "$src" "$dest"
+            printf "    ${GREEN}✓${NC}  ${DIM}%s -> %s${NC}\n" "$dest" "$src"
+            linked=$((linked + 1))
+        fi
+    done < /tmp/.dotfiles-$$
+    rm -f /tmp/.dotfiles-$$
+    printf "  ${DIM}→ %d linked, %d skipped, %d unchanged${NC}\n" "$linked" "$skipped" "$unchanged"
+    cd "$REPO"
+}
+
+cmd="${1:-help}"
+
+case "$cmd" in
+    install)
+        shift 2>/dev/null || true
+        if [ $# -ge 1 ]; then
+            for pkg in "$@"; do install_pkg "$pkg"; done
+        else
+            for pkg in $PKGS; do install_pkg "$pkg"; done
+        fi
+        ;;
+    uninstall)
+        for pkg in $PKGS; do
+            dir="$REPO/$pkg"
+            [ -d "$dir" ] || continue
+            printf "  ${BOLD}${CYAN}─── %s ───${NC}\n" "$pkg"
+            (cd "$dir" && find . -type f | while read -r f; do
+                rel="${f#./}"
+                dest="$PREFIX/$rel"
+                src="$(pwd)/$rel"
+                if [ -L "$dest" ] && [ "$(readlink "$dest")" = "$src" ]; then
+                    rm "$dest" && printf "    ${RED}✗${NC}  ${DIM}%s${NC}\n" "$dest"
+                fi
+            done)
+        done
+        ;;
+    relink)
+        "$0" uninstall
+        "$0" install
+        ;;
+    status)
+        ok=0; conflict=0; missing=0
+        for pkg in $PKGS; do
+            dir="$REPO/$pkg"
+            [ -d "$dir" ] || continue
+            printf "  ${BOLD}${CYAN}─── %s ───${NC}\n" "$pkg"
+            cd "$dir"
+            find . -type f > /tmp/.dotfiles-status-$$
+            while read -r f; do
+                rel="${f#./}"
+                dest="$PREFIX/$rel"
+                src="$(pwd)/$rel"
+                if [ -L "$dest" ] && [ "$(readlink "$dest")" = "$src" ]; then
+                    printf "  ${GREEN}✓${NC}  OK       ${DIM}%s${NC}\n" "$dest"
+                    ok=$((ok + 1))
+                elif [ -e "$dest" ]; then
+                    printf "  ${RED}✗${NC}  CONFLICT ${DIM}%s${NC}\n" "$dest"
+                    conflict=$((conflict + 1))
+                else
+                    printf "  ${YELLOW}⚠${NC}  MISSING  ${DIM}%s${NC}\n" "$dest"
+                    missing=$((missing + 1))
+                fi
+            done < /tmp/.dotfiles-status-$$
+            rm -f /tmp/.dotfiles-status-$$
+            cd "$REPO"
+        done
+        printf "\n  ${DIM}→ %d OK, %d conflict, %d missing${NC}\n" "$ok" "$conflict" "$missing"
+        ;;
+    list)
+        for pkg in $PKGS; do echo "$pkg"; done
+        ;;
+    clean)
+        printf "  ${BOLD}${CYAN}─── cleaning broken symlinks ───${NC}\n"
+        find "$PREFIX" -maxdepth 4 -type l ! -exec test -e {} \; -print 2>/dev/null | \
+        while read -r l; do
+            case "$l" in
+                "$PREFIX/.config/opencode"*) ;;
+                *) case "$(readlink "$l")" in
+                    "$REPO"/*) printf "  ${RED}✗${NC}  ${DIM}%s${NC}\n" "$l"; rm "$l" ;;
+                esac ;;
+            esac
+        done
+        ;;
+    help|--help|-h)
+        usage
+        ;;
+    *)
+        dir="$REPO/$cmd"
+        if [ -d "$dir" ]; then
+            install_pkg "$cmd"
+        else
+            printf "  ${RED}✗${NC}  unknown command or package: %s\n" "$cmd" >&2
+            printf "\n" >&2
+            usage
+        fi
+        ;;
+esac

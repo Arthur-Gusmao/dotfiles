@@ -14,7 +14,7 @@ riverctl keyboard-layout -variant altgr-intl us
 riverctl set-repeat 50 250
 
 # ============================================================
-riverctl map normal Super+Shift Return spawn st-wl
+riverctl map normal Super+Shift Return spawn 'st-wl'
 riverctl map normal Super P spawn 'mew-run -b'
 
 riverctl map normal Super+Shift P spawn '/home/aw/.local/bin/flatpak-wmenu.sh'
