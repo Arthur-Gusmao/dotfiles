@@ -88,9 +88,9 @@ riverctl map normal Super+Shift Space toggle-float
 
 riverctl map normal Super E toggle-fullscreen
 
+riverctl map normal Super Escape spawn 'waylock'
+
 riverctl map normal Super T send-layout-cmd rivertile "main-location left"
-# rivertile não tem layout "monocle" nativo — use toggle-fullscreen (Super E) como alternativa
-# riverctl map normal Super M send-layout-cmd rivertile "main-location monocle"
 
 riverctl map normal Super Up    send-layout-cmd rivertile "main-location top"
 riverctl map normal Super Right send-layout-cmd rivertile "main-location right"
@@ -121,10 +121,11 @@ done
 riverctl focus-follows-cursor normal
 
 # ============================================================
-wbg /home/aw/Wallpapers/5lG.jpg &
+wbg /home/aw/Wallpapers/blackhole.png & 
 wlr-randr --output DP-1 --mode 1920x1080@100Hz &
 dbus-update-activation-environment --systemd --all
 mako -c "$HOME/.config/mako/config" &
+swayidle &
 openrc --user gui &
 riverctl spawn "$HOME/.config/river/bar"
 
