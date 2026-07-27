@@ -10,10 +10,10 @@ PREFIX  = $(HOME)
 DOAS    = doas
 ETCDIR  = /etc
 
-PKGS = foot havoc kak profile qutebrowser tmux vis river mako gtk jj shell git
+PKGS = foot havoc kak profile qutebrowser tmux vis river mako gtk jj shell git swayidle
 
 .PHONY: all install uninstall relink status list help \
-        doas-install doas-uninstall doas-diff clean $(PKGS)
+        doas-install doas-uninstall doas-diff clean arkenfox opencode $(PKGS)
 
 all: help
 
@@ -27,6 +27,8 @@ help:
 	@echo "make doas-install  install /etc/doas.conf (root-owned copy)"
 	@echo "make doas-uninstall  remove /etc/doas.conf (only if matching)"
 	@echo "make doas-diff     diff installed vs repo doas.conf"
+	@echo "make arkenfox      install arkenfox user.js to Firefox profiles"
+	@echo "make opencode     install opencode"
 	@echo "make clean         remove broken symlinks from $(PREFIX)"
 
 list:
@@ -68,7 +70,9 @@ uninstall:
 	  done); \
 	done
 
-relink: uninstall install
+relink:
+	@$(MAKE) uninstall
+	@$(MAKE) install
 
 status:
 	@for p in $(PKGS); do \
@@ -86,6 +90,37 @@ status:
 	    fi; \
 	  done); \
 	done
+
+# ── arkenfox user.js ────────────────────────────────────────────────
+
+ARKENFOX_URL = https://github.com/arkenfox/user.js/releases/latest/download/user.js
+FIREFOX_DIR  = $(HOME)/.config/mozilla/firefox
+
+arkenfox:
+	@echo "==> downloading arkenfox user.js"
+	@curl -sL "$(ARKENFOX_URL)" -o /tmp/user.js || \
+	  { echo "failed to download user.js"; exit 1; }
+	@profiles=$$(find "$(FIREFOX_DIR)" -maxdepth 1 -type d -name '*.default*' 2>/dev/null); \
+	if [ -z "$$profiles" ]; then \
+	  echo "    no Firefox profiles found in $(FIREFOX_DIR)"; \
+	  echo "    start Firefox once to create a profile, then re-run 'make arkenfox'"; \
+	  rm -f /tmp/user.js; \
+	  exit 0; \
+	fi; \
+	for d in $$profiles; do \
+	  cp /tmp/user.js "$$d/user.js"; \
+	  echo "    $$d/user.js"; \
+	done; \
+	rm -f /tmp/user.js
+	@echo "    restart Firefox to apply"
+
+# ── opencode ─────────────────────────────────────────────────────────
+
+OPENCODE_URL = https://opencode.ai/install
+
+opencode:
+	@echo "==> installing opencode"
+	@curl -fsSL "$(OPENCODE_URL)" | bash
 
 # ── doas (needs root) ───────────────────────────────────────────────
 
