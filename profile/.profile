@@ -4,7 +4,7 @@ export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_CACHE_HOME="$HOME/.cache"
 export XDG_STATE_HOME="$HOME/.local/state"
-export XDG_DATA_DIRS="/usr/local/share:/usr/share"
+export XDG_DATA_DIRS="$HOME/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
 export XDG_CONFIG_DIRS="/etc/xdg"
 mkdir -p "$XDG_STATE_HOME"
 
@@ -12,23 +12,43 @@ if test -z "${XDG_RUNTIME_DIR}"; then
     export XDG_RUNTIME_DIR=/run/user/$(id -ru)
 fi
 if test -d "${XDG_RUNTIME_DIR}"; then
-    perms="$(stat -c '%a %u' "${XDG_RUNTIME_DIR}")"
-    if [ "${perms}" != "700 $(id -ru)" ]; then
+    _mode=$(stat -c '%a' "${XDG_RUNTIME_DIR}" 2>/dev/null || stat -f '%Lp' "${XDG_RUNTIME_DIR}" 2>/dev/null)
+    _uid=$(stat -c '%u' "${XDG_RUNTIME_DIR}" 2>/dev/null || stat -f '%u' "${XDG_RUNTIME_DIR}" 2>/dev/null)
+    if [ "$_mode" != "700" ] || [ "$_uid" != "$(id -ru)" ]; then
         unset XDG_RUNTIME_DIR
         echo "WARNING! XDG_RUNTIME_DIR has incorrect permissions"
     fi
+    unset _mode _uid
 else
     mkdir -p "${XDG_RUNTIME_DIR}"
     chmod 0700 "${XDG_RUNTIME_DIR}"
 fi
 
 # ---------------------------------------------------------------------
+# Path dedup helper: prepend to a variable only if the dir exists and
+# isn't already the first entry.
+_prepend_path() {
+    _var="$1"; _dir="$2"
+    eval "_cur=\"\${${_var}:-}\""
+    case ":$_cur:" in
+        *":$_dir:"*) ;;
+        *) eval "export ${_var}=\"${_dir}${_cur:+:$_cur}\"" ;;
+    esac
+    unset _var _dir _cur
+}
+
 export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/bin:$PATH"
-export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH"
-export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
+_prepend_path PKG_CONFIG_PATH "/usr/local/lib/pkgconfig"
+_prepend_path LD_LIBRARY_PATH "/usr/local/lib"
+unset _prepend_path
+
 export CC=cc
 export CFLAGS="-O2 -pipe"
-export MAKEFLAGS="-j$(nproc)"
+if command -v nproc >/dev/null 2>&1; then
+    export MAKEFLAGS="-j$(nproc)"
+elif command -v sysctl >/dev/null 2>&1; then
+    export MAKEFLAGS="-j$(sysctl -n hw.ncpu 2>/dev/null || echo 1)"
+fi
 
 # ---------------------------------------------------------------------
 export EDITOR=vis
@@ -45,6 +65,7 @@ export FCEDIT=vis
 
 # ---------------------------------------------------------------------
 export LESS='-MSFR'
+export LESSHISTFILE="$XDG_STATE_HOME/less/history"
 
 # ------------------------------------------------------------------------
 export MAIL="/var/mail/$(id -un)"
@@ -58,7 +79,9 @@ export GIT_SSH=dbclient
 
 # ---------------------------------------------------------------------
 export GNUPGHOME="$XDG_DATA_HOME/gnupg"
-export GPG_TTY="$(tty)"
+if test -t 0; then
+    export GPG_TTY=$(tty 2>/dev/null)
+fi
 export WGETRC="$XDG_CONFIG_HOME/wgetrc"
 export SQLITE_HISTORY="$XDG_STATE_HOME/sqlite_history"
 export GDBHISTFILE="$XDG_STATE_HOME/gdb/history"
