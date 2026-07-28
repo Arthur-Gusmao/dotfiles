@@ -18,7 +18,16 @@ NC    = \033[0m
 PKGS = foot havoc kak profile qutebrowser tmux vis river mako gtk jj shell git swayidle
 
 # Packages installed by `make deps` — edit for your distro
-DEPS = foot kakoune qutebrowser tmux vis river-classic mako jujutsu git swayidle
+DEPS = \
+  foot mksh tmux \
+  kakoune vis \
+  qutebrowser firefox \
+  river-classic sandbar wlr-randr grim slurp wl-clipboard wbg waylock wlopm \
+  mako \
+  swayidle \
+  jujutsu git \
+  wireplumber playerctl brightnessctl \
+  doas seatd dbus less curl make
 
 .PHONY: all install uninstall relink status list help \
         clean arkenfox opencode \
