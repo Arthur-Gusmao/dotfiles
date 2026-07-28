@@ -6,6 +6,7 @@ SOH=$(printf '\001')
 STX=$(printf '\002')
 umask 022
 export CDPATH=".:$HOME:$HOME/Projects"
+_cmd_start=""
 # ---------------------------------------------------------------------------
 if [ -n "$KSH_VERSION" ]; then
     set -o emacs
@@ -23,6 +24,7 @@ if [ -n "$KSH_VERSION" ]; then
     export HISTCONTROL=ignoredups:ignorespace
     bind -m '^[s=^Adoas ^E'
 fi
+preexec() { _cmd_start=$SECONDS; }
 # ---------------------------------------------------------------------------
 _c() {
     _c_out="${SOH}${ESC}[${1}m${STX}${2}${SOH}${ESC}[0m${STX}"
@@ -97,6 +99,13 @@ _prompt_line() {
     _vcs
     _jobs
     printf '%s%s%s ' "$_pdir_out" "$_vcs_out" "$_jobs_out"
+    if [ -n "${_cmd_start:-}" ]; then
+        _elapsed=$(( SECONDS - _cmd_start ))
+        if [ "$_elapsed" -ge 2 ]; then
+            _c '2;37' "${_elapsed}s"
+            printf '%s ' "$_c_out"
+        fi
+    fi
     if [ "$st" = 0 ]; then
         _c '1;32' '❯'
     else
@@ -140,13 +149,24 @@ ex() {
         *.xz)       unxz "$1"      ;;
         *.zip)      unzip "$1"     ;;
         *.zst)      zstd -d "$1"   ;;
+        *.7z)       7z x "$1"      ;;
+        *.deb)      ar x "$1"      ;;
+        *.rpm)      rpm2cpio "$1" | cpio -idm ;;
+        *.rar)      unrar x "$1"   ;;
+        *.cab)      cabextract "$1" ;;
+        *.lz)       lzip -d "$1"   ;;
+        *.lzma)     unlzma "$1"    ;;
+        *.Z)        uncompress "$1" ;;
         *)          echo "extract: unrecognized format: $1" ;;
     esac
 }
-pushd() { cd "$1" && set -- "$OLDPWD" "$@"; DIRSTACK="$1${DIRSTACK:+:$DIRSTACK}"; }
+pushd() {
+    [ -z "$1" ] && return 1
+    DIRSTACK="$PWD${DIRSTACK:+:$DIRSTACK}"
+    cd "$1"
+}
 popd() {
     [ -z "$DIRSTACK" ] && return 1
     cd "${DIRSTACK%%:*}"
     DIRSTACK="${DIRSTACK#*:}"
-    [ "$DIRSTACK" = "${DIRSTACK#*:}" ] && [ "$DIRSTACK" = "${DIRSTACK%%:*}" ] || :
 }
