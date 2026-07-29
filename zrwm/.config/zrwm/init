@@ -1,4 +1,4 @@
-#!/usr/bin/sh
+#!/bin/sh
 modkey="super"
 TAGKEYS() {
     zrwm-msg bind $modkey $(($1 + 1)) view $((1 << $1))
