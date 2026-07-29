@@ -10,11 +10,11 @@ zrwm-msg clear-rules
 zrwm-msg clear-binds
 
 # ─── launchers ───
-zrwm-msg bind $modkey Return spawn st-wl
+zrwm-msg bind $modkey Return spawn foot
 zrwm-msg bind $modkey d spawn mew-run -b
 zrwm-msg bind $modkey,shift p spawn /home/aw/.local/bin/flatpak-wmenu.sh
-zrwm-msg bind $modkey n spawn st-wl -e noice
-zrwm-msg bind $modkey escape spawn waylock
+zrwm-msg bind $modkey n spawn foot -e noice
+zrwm-msg bind $modkey Escape spawn waylock
 zrwm-msg bind $modkey,shift s spawn "grim -g \"$(slurp)\" - | wl-copy"
 
 # ─── window management ───
