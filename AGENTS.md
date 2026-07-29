@@ -15,6 +15,14 @@
 - `DEPS` variable is user-editable — set per-distro package names in Makefile.
 - PM detection (apk, apt, pacman, etc.) and package manager command selection happens inside the `deps` recipe via shell `if/elif`.
 
+## `make services` / service management
+
+- `SERVICES` variable is user-editable — set service names in Makefile.
+- Init system is auto-detected inside the recipe: OpenRC (`rc-update`), systemd (`systemctl`), runit (`sv`), s6 (`s6-svc`).
+- **elogind and seatd conflict** on seat/session management — never enable both. Only `elogind` is in `SERVICES` by default.
+- Services are enabled and started in one pass.
+- `make services` needs root (prints `doas make services` when non-root).
+
 ## Directory layout
 
 - Each subdirectory mirrors its `$HOME` path: `foot/.config/foot/foot.ini` → `~/.config/foot/foot.ini`
@@ -49,9 +57,23 @@
 | `make list` | List available packages |
 | `make relink` | Uninstall + install |
 | `make deps` | Print or install required packages (run as `doas make deps`) |
-| `make bootstrap` | deps + install |
+| `make services` | Enable standard services (run as `doas make services`) |
+| `make services-list` | List configured services |
+| `make bootstrap` | deps + install + services |
 | `make update` | `git pull --ff-only` + relink |
 | `make system-install` | Install `/etc/doas.conf` + `/etc/local.d/*` |
 | `make clean` | Remove broken symlinks from `$HOME` |
 | `make arkenfox` | Deploy arkenfox user.js to Firefox profiles |
 | `make opencode` | Install opencode via curl pipe |
+| `make zrwm-build` | Build & install zrwm from source (river 0.4 WM) |
+
+## river / zrwm
+
+- **river-classic** was replaced by **river (0.4.x) + zrwm** (window manager).
+- `river` package from Alpine community repo (compositor only, no riverctl).
+- `zrwm` built from source (`git.sr.ht/~zuki/zrwm`) — written in C, uses `zrwm-msg` IPC.
+- Config split:
+  - `river/.config/river/init` → compositor autostarts + `exec zrwm`
+  - `zrwm/.config/zrwm/init` → keybindings, layout, rules, appearance
+- `river/.config/river/init.bak` preserved backup of the old river-classic config.
+- Build zrwm: `doas make zrwm-build` (requires `zig`, `wayland-dev`)

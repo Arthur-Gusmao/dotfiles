@@ -1,69 +1,12 @@
 #!/usr/bin/env sh
 
-FIFO="$XDG_RUNTIME_DIR/sandbar"
-[ -e "$FIFO" ] && rm -f "$FIFO"
-mkfifo "$FIFO"
-
-FG="#ebdbb2"
-ACCENT="#83a598"
-DIM="#665c54"
-
-ICON_CPU="$(printf '\357\213\233')"   # microchip
-ICON_MEM="$(printf '\357\224\270')"   # memory chip
-ICON_DISK="$(printf '\357\202\240')"  # hdd
-ICON_VOL="$(printf '\357\200\250')"   # volume-up
-ICON_MUTE="$(printf '\357\200\246')"  # volume-off
-ICON_CLOCK="$(printf '\357\200\227')" # clock
-
-cpu() {
-  cpu="$(grep -o "^[^ ]*" /proc/loadavg)"
-}
-memory() {
-  memory="$(free -h | sed -n "2s/\([^ ]* *\)\{2\}\([^ ]*\).*/\2/p")"
-}
-disk() {
-  disk="$(df -h / | awk 'NR==2{print $4}')"
-}
-datetime() {
-  datetime="$(date "+%a %d %b %I:%M %P")"
-}
-vol() {
-  raw="$(wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null)"
-  if printf "%s" "$raw" | grep -q MUTED; then
-    vol_icon="$ICON_MUTE"
-    vol="muted"
-  else
-    vol_icon="$ICON_VOL"
-    vol="$(printf "%s" "$raw" | awk '{printf "%.0f%%", $2*100}')"
-  fi
-}
-display() {
-  echo "all status ^fg($ACCENT)${ICON_CPU}  ^fg($FG)${cpu}   ^fg($DIM)|   ^fg($ACCENT)${ICON_MEM}  ^fg($FG)${memory}   ^fg($DIM)|   ^fg($ACCENT)${ICON_DISK}  ^fg($FG)${disk}   ^fg($DIM)|   ^fg($ACCENT)${vol_icon}  ^fg($FG)${vol}   ^fg($DIM)|   ^fg($ACCENT)${ICON_CLOCK}  ^fg($FG)${datetime}^fg()" >"$FIFO"
-}
-
-status_loop() {
-  sec=0
-  while true; do
-    sleep 1
-    [ $((sec % 15)) -eq 0 ] && { memory; cpu; disk; }
-    [ $((sec % 60)) -eq 0 ] && datetime
-    vol
-    display
-    sec=$((sec + 1))
-  done
-}
-
-status_loop &
-STATUS_PID=$!
-trap 'kill "$STATUS_PID" 2>/dev/null; rm -f "$FIFO"' EXIT INT TERM
-
-while cat "$FIFO"; do :; done | sandbar \
-  -font "IosevkaTerm Nerd Font:14" \
+slstatus -s | sandbar \
+  -font "IosevkaTerm Nerd Font Propo:size=14" \
   -active-fg-color "#fbf1c7" \
-  -active-bg-color "$ACCENT" \
-  -inactive-fg-color "$FG" \
+  -active-bg-color "#83a598" \
+  -inactive-fg-color "#ebdbb2" \
   -inactive-bg-color "#282828" \
   -urgent-fg-color "#282828" \
   -urgent-bg-color "#fb4934" \
   -title-fg-color "#fbf1c7" \
-  -title-bg-color "$DIM"
+  -title-bg-color "#665c54"

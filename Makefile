@@ -21,19 +21,28 @@ PKGS = foot havoc kak profile qutebrowser tmux vis river mako gtk jj shell git s
 DEPS = \
   foot mksh tmux \
   kakoune vis \
-  qutebrowser firefox \
-  river-classic sandbar wlr-randr grim slurp wl-clipboard wbg waylock wlopm \
+  qutebrowser firefox ublock-origin \
+  river zig wayland-dev sandbar wlr-randr grim slurp wl-clipboard wbg waylock wlopm \
   mako \
   swayidle \
   jujutsu git \
   wireplumber playerctl brightnessctl \
-  doas seatd dbus less curl make
+  doas seatd dbus zzz less curl make
+
+# Standard services to enable — edit for your init system
+# NOTE: elogind provides seat management; do NOT enable seatd
+# alongside elogind — they conflict on seat/session control.
+SERVICES = \
+  elogind \
+  dbus 
 
 .PHONY: all install uninstall relink status list help \
         clean arkenfox opencode \
         system-install system-uninstall \
         doas doas-install doas-uninstall doas-diff \
         local.d-install local.d-uninstall local.d-diff \
+        services services-list \
+        zrwm-build \
         deps bootstrap update \
         $(PKGS)
 
@@ -78,6 +87,7 @@ help:
 	printf "\n"; \
 	printf "$(BOLD)  🌐 System Packages$(NC)\n"; \
 	printf "    $(GREEN)make deps$(NC)          Install required packages $(DIM)(auto-detected: $$PM)$(NC)\n"; \
+	printf "    $(GREEN)make services$(NC)      Enable standard services $(DIM)(elogind, seatd, dbus, ...)$(NC)\n"; \
 	printf "    $(GREEN)make bootstrap$(NC)     deps + install $(DIM)(full setup)$(NC)\n"; \
 	printf "    $(GREEN)make update$(NC)        git pull --ff-only + relink\n"; \
 	printf "\n"; \
@@ -93,7 +103,8 @@ help:
 	printf "\n"; \
 	printf "$(BOLD)  🔧 Extras$(NC)\n"; \
 	printf "    $(GREEN)make arkenfox$(NC)      deploy arkenfox user.js to Firefox profiles\n"; \
-	printf "    $(GREEN)make opencode$(NC)      install opencode\n"
+	printf "    $(GREEN)make opencode$(NC)      install opencode\n"; \
+	printf "    $(GREEN)make zrwm-build$(NC)   build & install zrwm from source\n"
 
 # ── arkenfox user.js ────────────────────────────────────────────────
 
@@ -126,6 +137,31 @@ OPENCODE_URL = https://opencode.ai/install
 opencode:
 	@printf "  $(BOLD)$(CYAN)─── opencode ───$(NC)\n"
 	@curl -fsSL "$(OPENCODE_URL)" | bash
+
+# ── zrwm (build from source) ───────────────────────────────────────────
+
+ZRWM_REPO = https://git.sr.ht/~zuki/zrwm
+ZRWM_DIR  = /tmp/zrwm-build
+ZRWM_BIN  = /usr/local/bin
+
+zrwm-build:
+	@trap '' 21 22; \
+	printf "  $(BOLD)$(CYAN)─── zrwm ───$(NC)\n"; \
+	rm -rf "$(ZRWM_DIR)"; \
+	if ! git clone --depth 1 "$(ZRWM_REPO)" "$(ZRWM_DIR)" 2>/dev/null; then \
+	  printf "  $(RED)✗$(NC)  failed to clone zrwm\n"; exit 1; \
+	fi; \
+	printf "  $(DIM)building...$(NC)\n"; \
+	if ! $(MAKE) -C "$(ZRWM_DIR)" >/dev/null 2>&1; then \
+	  printf "  $(RED)✗$(NC)  build failed — check dependencies (zig, wayland-dev)\n"; exit 1; \
+	fi; \
+	if [ "$$(id -u)" != "0" ]; then \
+	  printf "  $(YELLOW)⚠$(NC)  run as root:\n"; \
+	  printf "    $(BOLD)doas make zrwm-build$(NC)\n"; \
+	  exit 1; \
+	fi; \
+	install -m 0755 "$(ZRWM_DIR)/zrwm" "$(ZRWM_DIR)/zrwm-msg" "$(ZRWM_BIN)/" && \
+	printf "  $(GREEN)✓$(NC)  zrwm installed\n"
 
 # ── system (needs root) ─────────────────────────────────────────────
 # doas/doas.conf  →  /etc/doas.conf        (root-owned copy)
@@ -200,6 +236,40 @@ local.d-diff:
 	  diff -u "$$dest" "$$f" 2>/dev/null || true; \
 	done
 
+# ── services ──────────────────────────────────────────────────────
+# Enable standard system services (elogind, seatd, dbus, …).
+# Detects init system: OpenRC, systemd, runit, s6.
+
+services:
+	@trap '' 21 22; \
+	INIT=""; ENABLE=""; \
+	if command -v rc-update >/dev/null 2>&1; then \
+	  INIT="openrc"; ENABLE="rc-update add"; \
+	elif command -v systemctl >/dev/null 2>&1; then \
+	  INIT="systemd"; ENABLE="systemctl enable"; \
+	elif command -v sv >/dev/null 2>&1; then \
+	  INIT="runit"; ENABLE="ln -s /etc/sv"; \
+	elif command -v s6-svc >/dev/null 2>&1; then \
+	  INIT="s6"; ENABLE="s6-service enable"; \
+	else \
+	  printf "  $(YELLOW)⚠$(NC)  unknown init system; enable services manually\n"; exit 1; \
+	fi; \
+	if [ -z "$(SERVICES)" ]; then \
+	  printf "  $(YELLOW)⚠$(NC)  no services configured — edit SERVICES in Makefile\n"; exit 1; \
+	fi; \
+	printf "  $(BOLD)$(CYAN)─── enabling services ($$INIT) ───$(NC)\n"; \
+	for svc in $(SERVICES); do \
+	  if $$ENABLE $$svc 2>/dev/null; then \
+	    printf "  $(GREEN)✓$(NC)  $$svc enabled\n"; \
+	  else \
+	    printf "  $(YELLOW)⚠$(NC)  could not enable $$svc $(DIM)(not installed?)$(NC)\n"; \
+	  fi; \
+	done
+
+services-list:
+	@printf "  $(BOLD)$(CYAN)─── configured SERVICES ───$(NC)\n"; \
+	for svc in $(SERVICES); do printf "    • $$svc\n"; done
+
 # ── distro-agnostic installer ──────────────────────────────────────
 #
 # PM detection, escalation, and package lists are all computed inside
@@ -260,6 +330,7 @@ deps:
 bootstrap:
 	@$(MAKE) deps
 	@$(MAKE) install
+	@$(MAKE) services
 	@printf "  $(GREEN)✓$(NC)  bootstrap complete\n"
 
 update:
