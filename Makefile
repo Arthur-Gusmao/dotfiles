@@ -15,7 +15,7 @@ RED   = \033[31m
 YELLOW = \033[33m
 NC    = \033[0m
 
-PKGS = foot havoc kak profile qutebrowser tmux vis river mako gtk jj shell git swayidle
+PKGS = foot havoc kak profile qutebrowser tmux vis river mako gtk jj shell git
 
 # Packages installed by `make deps` — edit for your distro
 DEPS = \
@@ -24,16 +24,14 @@ DEPS = \
   qutebrowser firefox ublock-origin \
   river zig wayland-dev sandbar wlr-randr grim slurp wl-clipboard wbg waylock wlopm \
   mako \
-  swayidle \
+  wayidle \
   jujutsu git \
   wireplumber playerctl brightnessctl \
   doas seatd dbus zzz less curl make
 
 # Standard services to enable — edit for your init system
-# NOTE: elogind provides seat management; do NOT enable seatd
-# alongside elogind — they conflict on seat/session control.
 SERVICES = \
-  elogind \
+  seatd \
   dbus 
 
 .PHONY: all install uninstall relink status list help \
@@ -87,7 +85,7 @@ help:
 	printf "\n"; \
 	printf "$(BOLD)  🌐 System Packages$(NC)\n"; \
 	printf "    $(GREEN)make deps$(NC)          Install required packages $(DIM)(auto-detected: $$PM)$(NC)\n"; \
-	printf "    $(GREEN)make services$(NC)      Enable standard services $(DIM)(elogind, seatd, dbus, ...)$(NC)\n"; \
+	printf "    $(GREEN)make services$(NC)      Enable standard services $(DIM)(seatd, dbus, ...)$(NC)\n"; \
 	printf "    $(GREEN)make bootstrap$(NC)     deps + install $(DIM)(full setup)$(NC)\n"; \
 	printf "    $(GREEN)make update$(NC)        git pull --ff-only + relink\n"; \
 	printf "\n"; \

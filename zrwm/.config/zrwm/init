@@ -10,15 +10,15 @@ zrwm-msg clear-rules
 zrwm-msg clear-binds
 
 # ─── launchers ───
-zrwm-msg bind $modkey Return spawn foot
+zrwm-msg bind $modkey,shift Return spawn foot
 zrwm-msg bind $modkey d spawn mew-run -b
 zrwm-msg bind $modkey,shift p spawn /home/aw/.local/bin/flatpak-wmenu.sh
-zrwm-msg bind $modkey n spawn foot -e noice
-zrwm-msg bind $modkey Escape spawn waylock
+zrwm-msg bind $modkey n spawn foot -e rover
+zrwm-msg bind $modkey Escape spawn waylock -init-color 0x282828 -input-color 0x83a598 -fail-color 0xfb4934
 zrwm-msg bind $modkey,shift s spawn "grim -g \"$(slurp)\" - | wl-copy"
 
 # ─── window management ───
-zrwm-msg bind $modkey q killwindow
+zrwm-msg bind $modkey,shift c killwindow
 zrwm-msg bind $modkey,shift q exit
 zrwm-msg bind $modkey j focusstack 1
 zrwm-msg bind $modkey k focusstack -1
@@ -65,6 +65,9 @@ zrwm-msg bind none XF86AudioPrev spawn playerctl previous
 zrwm-msg bind none XF86AudioNext spawn playerctl next
 zrwm-msg bind none XF86MonBrightnessUp spawn brightnessctl set +5%
 zrwm-msg bind none XF86MonBrightnessDown spawn brightnessctl set 5%-
+
+# ─── display ───
+zrwm-msg bind $modkey o spawn wlopm --on DP-1
 
 # ─── keyboard layout ───
 zrwm-msg xkb-rule -layout us -variant altgr-intl

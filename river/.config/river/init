@@ -4,10 +4,10 @@ dbus-update-activation-environment --systemd --all
 wbg /home/aw/Wallpapers/blackhole.png &
 wlr-randr --output DP-1 --mode 1920x1080@100Hz &
 mako -c "$HOME/.config/mako/config" &
-swayidle -w \
-  timeout 300 'zrwm-msg spawn waylock' \
-  timeout 600 'wlopm --off DP-1' \
-  timeout 900 'doas zzz' resume 'wlopm --on DP-1' &
+# idle management via wayidle (no elogind dependency)
+wayidle -t 300 'zrwm-msg spawn waylock -init-color 0x282828 -input-color 0x83a598 -fail-color 0xfb4934' &
+wayidle -t 600 'wlopm --off DP-1' &
+( wayidle -t 900 'doas zzz' && wlopm --on DP-1 ) &
 openrc --user gui &
 "$HOME/.config/river/bar" &
 

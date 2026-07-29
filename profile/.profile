@@ -95,7 +95,7 @@ export RUSTUP_HOME="$XDG_DATA_HOME/rustup"
 
 # ---------------------------------------------------------------------
 export DBUS_SESSION_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR}/bus"
-#export LIBSEAT_BACKEND=seatd
+export LIBSEAT_BACKEND=seatd
 
 # ---------------------------------------------------------------------
 export XDG_SESSION_TYPE=wayland

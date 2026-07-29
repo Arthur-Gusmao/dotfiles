@@ -1,2 +1,0 @@
-timeout 300 'waylock -fork'
-timeout 600 'wlopm --off "*"'

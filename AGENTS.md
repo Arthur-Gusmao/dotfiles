@@ -19,7 +19,7 @@
 
 - `SERVICES` variable is user-editable — set service names in Makefile.
 - Init system is auto-detected inside the recipe: OpenRC (`rc-update`), systemd (`systemctl`), runit (`sv`), s6 (`s6-svc`).
-- **elogind and seatd conflict** on seat/session management — never enable both. Only `elogind` is in `SERVICES` by default.
+- **elogind and seatd conflict** on seat/session management — never enable both. Only `seatd` is in `SERVICES` by default.
 - Services are enabled and started in one pass.
 - `make services` needs root (prints `doas make services` when non-root).
 
