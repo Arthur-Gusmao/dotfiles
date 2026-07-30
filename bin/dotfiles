@@ -34,7 +34,7 @@ DEPS="foot mksh tmux kakoune vis qutebrowser librewolf
 
 SERVICES="local seatd dbus"
 
-EXCL="! -path */.git/* ! -path */doas/* ! -path */local.d/* ! -path */bin/*"
+EXCL="! -path */.git/* ! -path */doas/* ! -path */local.d/* ! -path */libinput/* ! -path */bin/*"
 
 # ─────────────────────────────────────────────────────────────
 # functions
@@ -198,6 +198,20 @@ do_locald() {
     ok "installed"
 }
 
+do_libinput() {
+    [ -f "$repo/libinput/local-overrides.quirks" ] || die "libinput quirks not found"
+    head "/etc/libinput/local-overrides.quirks"
+
+    if command -v doas >/dev/null; then
+        doas mkdir -p /etc/libinput
+        doas install -m 0644 "$repo/libinput/local-overrides.quirks" /etc/libinput/local-overrides.quirks
+    else
+        warn "bootstrap (su)"
+        su root -c "mkdir -p /etc/libinput && install -m 0644 '$repo/libinput/local-overrides.quirks' /etc/libinput/local-overrides.quirks"
+    fi
+    ok "installed"
+}
+
 do_iosevka() {
     need_root iosevka
     head "Iosevka Term Nerd Font"
@@ -248,7 +262,8 @@ case "${1:-help}" in
   ${B}system${N}
     deps             install packages (run as root)
     services         enable services (run as root)
-    system-install   install doas.conf + local.d
+    system-install   install doas.conf + local.d + libinput quirks
+    libinput-install install libinput quirks
 
   ${B}extras${N}
     iosevka          install Iosevka Nerd Font
@@ -267,9 +282,10 @@ EOF
     
     deps)         do_deps ;;
     services)     do_services ;;
-    system-install) do_doas; do_locald ;;
+    system-install) do_doas; do_locald; do_libinput ;;
     doas-install) do_doas ;;
     locald-install) do_locald ;;
+    libinput-install) do_libinput ;;
     
     iosevka)      do_iosevka ;;
     opencode)     curl -fsSL https://opencode.ai/install | sh ;;
