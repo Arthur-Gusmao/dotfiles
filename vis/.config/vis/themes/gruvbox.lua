@@ -7,89 +7,89 @@ local mode  = 'dark'
 local contrast  = 'medium'
 
 local gruvbox = {
-  dark0h  = '#1d2021',
-  dark0 = '#282828',
-  dark0s  = '#32302f',
-  dark1 = '#3c3836',
-  dark2 = '#504945',
-  dark3 = '#665c54',
-  dark4 = '#7c6f64',
-  light0h = '$f9f5d7',
-  light0  = '#fbf1c7',
-  light0s = '#f2e5bc',
-  light1  = '#ebdbb2',
-  light2  = '#d5c4a1',
-  light3  = '#bdae93',
-  light4  = '#a89984',
-  gray  = '#928374',
-  red0  = '#fb4934',
-  red1  = '#9d0006',
-  green0  = '#b8bb26',
-  green1  = '#79740e',
-  yellow0 = '#fabd2f',
-  yellow1 = '#b57614',
-  blue0 = '#83a598',
-  blue1 = '#076678',
-  purple0 = '#d3869b',
-  purple1 = '#8f3f71',
-  aqua0 = '#8ec07c',
-  aqua1 = '#427b58',
-  orange0 = '#fe8019',
-  orange1 = '#af3a03',
+	dark0h  = '#1d2021',
+	dark0 = '#282828',
+	dark0s  = '#32302f',
+	dark1 = '#3c3836',
+	dark2 = '#504945',
+	dark3 = '#665c54',
+	dark4 = '#7c6f64',
+	light0h = '$f9f5d7',
+	light0  = '#fbf1c7',
+	light0s = '#f2e5bc',
+	light1  = '#ebdbb2',
+	light2  = '#d5c4a1',
+	light3  = '#bdae93',
+	light4  = '#a89984',
+	gray  = '#928374',
+	red0  = '#fb4934',
+	red1  = '#9d0006',
+	green0  = '#b8bb26',
+	green1  = '#79740e',
+	yellow0 = '#fabd2f',
+	yellow1 = '#b57614',
+	blue0 = '#83a598',
+	blue1 = '#076678',
+	purple0 = '#d3869b',
+	purple1 = '#8f3f71',
+	aqua0 = '#8ec07c',
+	aqua1 = '#427b58',
+	orange0 = '#fe8019',
+	orange1 = '#af3a03',
 }
 
 local colors = {}
 
 if mode == 'dark' then
-  if contrast == 'hard' then
-    colors.bg0 = gruvbox.dark0h
-  elseif contrast == 'medium' then
-    colors.bg0 = gruvbox.dark0
-  elseif contrast == 'soft' then
-    colors.bg0 = gruvbox.dark0s
-  end
-  colors.bg1  = gruvbox.dark1
-  colors.bg2  = gruvbox.dark2
-  colors.bg3  = gruvbox.dark3
-  colors.bg4  = gruvbox.dark4
-  colors.fg0  = gruvbox.light0
-  colors.fg1  = gruvbox.light1
-  colors.fg2  = gruvbox.light2
-  colors.fg3  = gruvbox.light3
-  colors.fg4  = gruvbox.light4
-  colors.gray = gruvbox.gray
-  colors.red  = gruvbox.red0
-  colors.green  = gruvbox.green0
-  colors.yellow = gruvbox.yellow0
-  colors.blue = gruvbox.blue0
-  colors.purple = gruvbox.purple0
-  colors.aqua = gruvbox.aqua0
-  colors.orange = gruvbox.orange0
+	if contrast == 'hard' then
+		colors.bg0 = gruvbox.dark0h
+	elseif contrast == 'medium' then
+		colors.bg0 = gruvbox.dark0
+	elseif contrast == 'soft' then
+		colors.bg0 = gruvbox.dark0s
+	end
+	colors.bg1  = gruvbox.dark1
+	colors.bg2  = gruvbox.dark2
+	colors.bg3  = gruvbox.dark3
+	colors.bg4  = gruvbox.dark4
+	colors.fg0  = gruvbox.light0
+	colors.fg1  = gruvbox.light1
+	colors.fg2  = gruvbox.light2
+	colors.fg3  = gruvbox.light3
+	colors.fg4  = gruvbox.light4
+	colors.gray = gruvbox.gray
+	colors.red  = gruvbox.red0
+	colors.green  = gruvbox.green0
+	colors.yellow = gruvbox.yellow0
+	colors.blue = gruvbox.blue0
+	colors.purple = gruvbox.purple0
+	colors.aqua = gruvbox.aqua0
+	colors.orange = gruvbox.orange0
 elseif mode == 'light' then
-  if contrast == 'hard' then
-    colors.bg0 = gruvbox.light0h
-  elseif contrast == 'medium' then
-    colors.bg0 = gruvbox.light0
-  elseif contrast == 'soft' then
-    colors.bg0 = gruvbox.light0s
-  end
-  colors.bg1  = gruvbox.light1
-  colors.bg2  = gruvbox.light2
-  colors.bg3  = gruvbox.light3
-  colors.bg4  = gruvbox.light4
-  colors.fg0  = gruvbox.dark0
-  colors.fg1  = gruvbox.dark1
-  colors.fg2  = gruvbox.dark2
-  colors.fg3  = gruvbox.dark3
-  colors.fg4  = gruvbox.dark4
-  colors.gray = gruvbox.gray
-  colors.red  = gruvbox.red1
-  colors.green  = gruvbox.green1
-  colors.yellow = gruvbox.yellow1
-  colors.blue = gruvbox.blue1
-  colors.purple = gruvbox.purple1
-  colors.aqua = gruvbox.aqua1
-  colors.orange = gruvbox.orange1
+	if contrast == 'hard' then
+		colors.bg0 = gruvbox.light0h
+	elseif contrast == 'medium' then
+		colors.bg0 = gruvbox.light0
+	elseif contrast == 'soft' then
+		colors.bg0 = gruvbox.light0s
+	end
+	colors.bg1  = gruvbox.light1
+	colors.bg2  = gruvbox.light2
+	colors.bg3  = gruvbox.light3
+	colors.bg4  = gruvbox.light4
+	colors.fg0  = gruvbox.dark0
+	colors.fg1  = gruvbox.dark1
+	colors.fg2  = gruvbox.dark2
+	colors.fg3  = gruvbox.dark3
+	colors.fg4  = gruvbox.dark4
+	colors.gray = gruvbox.gray
+	colors.red  = gruvbox.red1
+	colors.green  = gruvbox.green1
+	colors.yellow = gruvbox.yellow1
+	colors.blue = gruvbox.blue1
+	colors.purple = gruvbox.purple1
+	colors.aqua = gruvbox.aqua1
+	colors.orange = gruvbox.orange1
 end
 
 -- To use your terminal's default background (e.g. for transparency), set the value below to 'back:default,fore:'..colors.fg1
@@ -127,3 +127,5 @@ vis.lexers.STYLE_STATUS_FOCUSED   = 'fore:'..colors.bg2..',back:'..colors.fg1..'
 vis.lexers.STYLE_SEPARATOR    = 'fore:'..colors.bg3
 vis.lexers.STYLE_INFO     = 'fore:'..colors.yellow..',bold'
 vis.lexers.STYLE_EOF      = vis.lexers.STYLE_LINENUMBER
+
+

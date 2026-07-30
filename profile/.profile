@@ -14,7 +14,7 @@ if test -z "${XDG_RUNTIME_DIR}"; then
 fi
 if test -d "$XDG_RUNTIME_DIR"; then
   perms="$(stat -c '%a %u'"${XDG_RUNTIME_DIR}")"
-  if [ "${perms}"!= "700 $(id -ri)" ]; then
+  if [ "${perms}"!= "700 $(id -ru)" ]; then
     unset XDG_RUNTIME_DIR
     echo "WARNING! XDG_RUNTIME_DIR has incorrect permissions"
   fi
