@@ -15,9 +15,9 @@ Personal configuration for a small, direct, text-oriented environment.
 Each package directory mirrors its destination under `$HOME`:
 
 ```
-foot/.config/foot/foot.ini  ~/.config/foot/foot.ini
-river/.config/river/init    ~/.config/river/init
-shell/.rc                   ~/.rc
+foot/.config/foot/foot.ini  →  ~/.config/foot/foot.ini
+river/.config/river/init    →  ~/.config/river/init
+shell/.rc                   →  ~/.rc
 ```
 
 `doas/doas.conf` is the exception: installed as a root-owned **copy** at
@@ -28,21 +28,21 @@ shell/.rc                   ~/.rc
 ```sh
 git clone <url> ~/.dotfiles
 cd ~/.dotfiles
-doas make deps       # install system packages
-make install         # symlink everything into $HOME
+doas bin/dotfiles deps       # install system packages
+bin/dotfiles install         # symlink everything into $HOME
 ```
 
 ## Architecture
 
-Core symlink operations live in a single POSIX `sh` script:
+A single POSIX `sh` script handles everything:
 
 ```
-bin/dotfiles   →  CLI: install, status, uninstall, list, relink, clean
+bin/dotfiles   →  CLI: install, uninstall, status, list, relink, clean,
+                  deps, services, bootstrap, update, system-install,
+                  iosevka, opencode, zrwm-build
 ```
 
-The Makefile is a thin wrapper around it, adding only system-level
-orchestration (package installation, doas/local.d management, Firefox
-user.js deployment).
+No Makefile, no justfile, no plan9port — zero dependencies beyond `sh`.
 
 Packages are auto-discovered: any directory at the repo root that contains
 files is a package. No need to register new ones.
@@ -51,35 +51,29 @@ files is a package. No need to register new ones.
 
 | Command | Description |
 |---------|-------------|
-| `make install` | Symlink all packages into `$HOME` |
-| `make foot` | Install one package |
-| `make uninstall` | Remove our symlinks |
-| `make relink` | Uninstall + install |
-| `make status` | Show link state (✓ / ✗ / ⚠) |
-| `make list` | List available packages |
-| `make clean` | Remove broken symlinks from `$HOME` |
-| `make deps` | Install required packages via detected PM |
-| `make bootstrap` | deps + install (full setup) |
-| `make update` | `git pull --ff-only` + relink |
-| `make system-install` | Install `/etc/doas.conf` + `/etc/local.d/*` |
-| `make arkenfox` | Deploy arkenfox user.js to Firefox profiles |
-| `make opencode` | Install opencode |
-
-Or invoke `bin/dotfiles` directly:
-
-```
-bin/dotfiles install         →  symlink all packages
-bin/dotfiles install foot    →  install specific package
-bin/dotfiles status          →  show link state
-bin/dotfiles clean           →  remove broken symlinks
-```
+| `bin/dotfiles install` | Symlink all packages into `$HOME` |
+| `bin/dotfiles install foot` | Install one package |
+| `bin/dotfiles uninstall` | Remove our symlinks |
+| `bin/dotfiles relink` | Uninstall + install |
+| `bin/dotfiles status` | Show link state (✓ / ✗ / ⚠) |
+| `bin/dotfiles list` | List available packages |
+| `bin/dotfiles clean` | Remove broken symlinks from `$HOME` |
+| `bin/dotfiles deps` | Install required packages via detected PM |
+| `bin/dotfiles bootstrap` | deps + install + services (full setup) |
+| `bin/dotfiles update` | `git pull --ff-only` + relink |
+| `bin/dotfiles services` | Enable standard services |
+| `bin/dotfiles services-list` | List configured services |
+| `bin/dotfiles system-install` | Install `/etc/doas.conf` + `/etc/local.d/*` |
+| `bin/dotfiles iosevka` | Install Iosevka Term Nerd Font |
+| `bin/dotfiles opencode` | Install opencode |
+| `bin/dotfiles zrwm-build` | Build & install zrwm from source |
 
 Installation never overwrites existing files — resolve conflicts manually.
 `uninstall` only removes links pointing exactly at this repository.
 
 ## Package manager detection
 
-`make deps` auto-detects the distro and installs packages:
+`bin/dotfiles deps` auto-detects the distro and installs packages:
 
 | Detected | Manager | Command |
 |----------|---------|---------|
@@ -99,15 +93,11 @@ Installation never overwrites existing files — resolve conflicts manually.
 Privilege escalation auto-detects `doas` → `sudo`. Package managers that
 don't need root (brew, nix, guix) skip escalation entirely.
 
-> **Note**: `doas` cannot authenticate inside `make`/`bmake` recipes
-> (background process group blocks terminal access). Run `doas make deps`
-> to authenticate from the real terminal.
+> **Note**: `doas` cannot authenticate inside background process groups.
+> Run `doas bin/dotfiles deps` to authenticate from the real terminal.
 
-## Direction
+## river / zrwm
 
-The goal is to reduce the Makefile to a simple POSIX `sh` bootstrap and let
-`bin/dotfiles` handle everything.
-
-When adding something, prefer a small readable script over another automation
-layer. If a tool is specific to Linux or Wayland, make that clear in its name,
-directory, and documentation.
+- river (compositor) + zrwm (window manager)
+- Config: `river/.config/river/init` (compositor) + `zrwm/.config/zrwm/init` (keybindings/layout)
+- Build zrwm: `doas bin/dotfiles zrwm-build` (requires `zig`, `wayland-dev`)

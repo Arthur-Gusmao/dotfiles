@@ -1,12 +1,22 @@
-#!/usr/bin/env sh
+#!/bin/sh
+# status bar — inline status (no slstatus), feeds sandbar via stdin
 
-slstatus -s | sandbar \
-  -font "IosevkaTerm Nerd Font Propo:size=14" \
-  -active-fg-color "#fbf1c7" \
-  -active-bg-color "#83a598" \
-  -inactive-fg-color "#ebdbb2" \
-  -inactive-bg-color "#282828" \
-  -urgent-fg-color "#282828" \
-  -urgent-bg-color "#fb4934" \
-  -title-fg-color "#fbf1c7" \
-  -title-bg-color "#665c54"
+status() {
+    while :; do
+        vol=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null | awk '{v=$2*100; printf (NF>2) ? "muted" : "%d%%", v}')
+        date_str=$(date '+%a %d %b  %H:%M')
+        printf 'vol %s  %s\n' "${vol:-n/a}" "$date_str"
+        sleep 10
+    done
+}
+
+status | sandbar \
+    -font "IosevkaTerm Nerd Font Propo:size=14" \
+    -active-fg-color "#fbf1c7" \
+    -active-bg-color "#83a598" \
+    -inactive-fg-color "#ebdbb2" \
+    -inactive-bg-color "#282828" \
+    -urgent-fg-color "#282828" \
+    -urgent-bg-color "#fb4934" \
+    -title-fg-color "#fbf1c7" \
+    -title-bg-color "#665c54"

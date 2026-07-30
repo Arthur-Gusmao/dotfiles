@@ -1,14 +1,18 @@
 #!/bin/sh
 
 dbus-update-activation-environment --systemd --all
-wbg /home/aw/Wallpapers/blackhole.png &
+
+[ -f "$HOME/Wallpapers/cabin.png" ] && wbg "$HOME/Wallpapers/cabin.png" &
+
 wlr-randr --output DP-1 --mode 1920x1080@100Hz &
-mako -c "$HOME/.config/mako/config" &
-# idle management via wayidle (no elogind dependency)
+mako &
+
 wayidle -t 300 'zrwm-msg spawn waylock -init-color 0x282828 -input-color 0x83a598 -fail-color 0xfb4934' &
 wayidle -t 600 'wlopm --off DP-1' &
 ( wayidle -t 900 'doas zzz' && wlopm --on DP-1 ) &
-openrc --user gui &
-"$HOME/.config/river/bar" &
 
-exec zrwm
+openrc --user gui &
+
+slstatus -s | dwlb -status-stdin all &
+exec zrwm | dwlb
+

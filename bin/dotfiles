@@ -1,170 +1,283 @@
-#!/bin/sh
-set -eu
+#!/bin/sh -e
+# dotfiles — symlink manager
 
-REPO="$(CDPATH='' cd "$(dirname "$0")/.." && pwd)"
-PREFIX="${HOME}"
+cd "$(dirname "$0")/.." || exit 1
+repo=$(pwd)
 
-# Auto-discover packages: all dirs at repo root except system dirs
-PKGS=""
-for d in "$REPO"/*/; do
-    [ -d "$d" ] || continue
-    dname=$(basename "$d")
-    case "$dname" in
-        .git|doas|local.d|bin) continue ;;
-    esac
-    # Only include if dir has at least one file
-    if find "$d" -type f 2>/dev/null | head -n 1 | grep -q . >/dev/null 2>&1; then
-        PKGS="$PKGS $dname"
-    fi
-done
-
-# Colors (auto-disable when piped)
-BOLD=; DIM=; CYAN=; GREEN=; RED=; YELLOW=; NC=
+# cores (byte ESC real — funciona em printf E heredoc; desativa sem tty)
 if [ -t 1 ]; then
-    BOLD=$(printf '\033[1m')
-    DIM=$(printf '\033[2m')
-    CYAN=$(printf '\033[36m')
-    GREEN=$(printf '\033[32m')
-    RED=$(printf '\033[31m')
-    YELLOW=$(printf '\033[33m')
-    NC=$(printf '\033[0m')
+    esc=$(printf '\033')
+    R="${esc}[31m" G="${esc}[32m" Y="${esc}[33m"
+    C="${esc}[36m" B="${esc}[1m"  D="${esc}[2m" N="${esc}[0m"
 fi
 
-usage() {
-    set -- $PKGS
-    COUNT=$#
-    printf "${BOLD}  ── dotfiles ────────────────────────────────────${NC}\n"
-    printf "  ${DIM}%d packages  ·  %s${NC}\n" "$COUNT" "$PREFIX"
-    printf "\n"
-    printf "${BOLD}  📦 Packages${NC}\n"
-    printf "    ${GREEN}install${NC}       Symlink all packages into ${DIM}%s${NC}\n" "$PREFIX"
-    printf "    ${GREEN}uninstall${NC}     Remove our symlinks\n"
-    printf "    ${GREEN}relink${NC}        Uninstall + install\n"
-    printf "    ${GREEN}status${NC}        Show link state ${DIM}(✓ / ✗ / ⚠)${NC}\n"
-    printf "    ${GREEN}list${NC}          List available packages\n"
-    printf "    ${GREEN}<pkg>${NC}         Install one package ${DIM}(e.g. foot)${NC}\n"
-    printf "    ${GREEN}clean${NC}         Remove broken symlinks from ${DIM}%s${NC}\n" "$PREFIX"
-    printf "\n"
-    printf "  ${DIM}For system commands: make help${NC}\n"
-    exit 0
+# ─────────────────────────────────────────────────────────────
+# config
+# ─────────────────────────────────────────────────────────────
+
+DEPS="foot mksh tmux kakoune vis qutebrowser librewolf
+    river zig wayland-dev wlr-randr grim slurp wl-clipboard
+    wbg waylock wlopm mako bash fcft-dev pixman-dev
+    util-linux shadow build-base libxkbcommon-dev
+    wayidle jujutsu git wireplumber playerctl brightnessctl
+    doas seatd dbus zzz less curl ronn
+    font-terminus font-inconsolata font-dejavu font-noto
+    font-noto-cjk font-awesome font-noto-extra font-vollkorn
+    font-misc-cyrillic font-mutt-misc font-screen-cyrillic
+    font-winitzki-cyrillic font-cronyx-cyrillic
+    font-noto-thai font-noto-tibetan font-ipa
+    font-sony-misc font-jis-misc font-isas-misc font-arabic-misc
+    font-noto-arabic font-noto-armenian font-noto-cherokee
+    font-noto-devanagari font-noto-ethiopic font-noto-georgian
+    font-noto-hebrew font-noto-lao font-noto-malayalam
+    font-noto-tamil font-noto-thaana"
+
+SERVICES="local seatd dbus"
+
+EXCL="! -path */.git/* ! -path */doas/* ! -path */local.d/* ! -path */bin/*"
+
+# ─────────────────────────────────────────────────────────────
+# functions
+# ─────────────────────────────────────────────────────────────
+
+die()  { printf "  ${R}✗${N}  %s\n" "$1"; exit 1; }
+ok()   { printf "  ${G}✓${N}  %s\n" "$1"; }
+warn() { printf "  ${Y}⚠${N}  %s\n" "$1"; }
+head() { printf "  ${B}${C}─── %s ───${N}\n" "$1"; }
+
+need_root() {
+    [ "$(id -u)" = 0 ] || { warn "run: ${B}doas $0 $1${N}"; exit 1; }
 }
 
-install_pkg() {
-    pkg="$1"
-    dir="$REPO/$pkg"
-    if [ ! -d "$dir" ]; then
-        printf "  ${YELLOW}⚠${NC}  ${DIM}%s: not found, skipping${NC}\n" "$pkg"
-        return
-    fi
-    printf "  ${BOLD}${CYAN}─── %s ───${NC}\n" "$pkg"
-    cd "$dir"
-    find . -type f > /tmp/.dotfiles-$$
-    linked=0; skipped=0; unchanged=0
-    while read -r f; do
-        rel="${f#./}"
-        dest="$PREFIX/$rel"
-        src="$(pwd)/$rel"
+# find package files (skip .git, doas, local.d, bin)
+pkg_files() {
+    set -f
+    find "${1:-$repo}" ${2:--mindepth 2} -type f $EXCL
+    set +f
+}
+
+# ─────────────────────────────────────────────────────────────
+# commands
+# ─────────────────────────────────────────────────────────────
+
+do_install() {
+    head "installing"
+    depth="-mindepth 2"
+    target="$repo"
+    [ -n "$1" ] && { target="$repo/$1"; depth=""; }
+    
+    pkg_files "$target" "$depth" | while IFS= read -r f; do
+        rel="${f#$repo/}"; dest="$HOME/${rel#*/}"
         mkdir -p "$(dirname "$dest")"
-        if [ -L "$dest" ] && [ "$(readlink "$dest")" = "$src" ]; then
-            unchanged=$((unchanged + 1))
-        elif [ -e "$dest" ]; then
-            printf "    ${DIM}SKIP${NC}  ${YELLOW}⚠${NC}  %s\n" "$dest"
-            skipped=$((skipped + 1))
+        
+        if [ -L "$dest" ] && [ "$(readlink "$dest")" = "$f" ]; then
+            continue
+        elif [ -e "$dest" ] || [ -L "$dest" ]; then
+            warn "conflict  $dest"
         else
-            ln -sfn "$src" "$dest"
-            printf "    ${GREEN}✓${NC}  ${DIM}%s -> %s${NC}\n" "$dest" "$src"
-            linked=$((linked + 1))
+            ln -s "$f" "$dest"
+            printf "  ${G}✓${N}  ${D}%s${N}\n" "$dest"
         fi
-    done < /tmp/.dotfiles-$$
-    rm -f /tmp/.dotfiles-$$
-    printf "  ${DIM}→ %d linked, %d skipped, %d unchanged${NC}\n" "$linked" "$skipped" "$unchanged"
-    cd "$REPO"
+    done
 }
 
-cmd="${1:-help}"
+do_uninstall() {
+    head "removing"
+    pkg_files | while IFS= read -r f; do
+        rel="${f#$repo/}"; dest="$HOME/${rel#*/}"
+        [ -L "$dest" ] && [ "$(readlink "$dest")" = "$f" ] || continue
+        rm "$dest"
+        printf "  ${R}✗${N}  ${D}%s${N}\n" "$dest"
+    done
+}
 
-case "$cmd" in
-    install)
-        shift 2>/dev/null || true
-        if [ $# -ge 1 ]; then
-            for pkg in "$@"; do install_pkg "$pkg"; done
+do_status() {
+    tmp=/tmp/dotfiles-status-$$
+    : > "$tmp"
+    
+    pkg_files | while IFS= read -r f; do
+        rel="${f#$repo/}"; dest="$HOME/${rel#*/}"
+        if [ -L "$dest" ]; then
+            if [ "$(readlink "$dest")" = "$f" ]; then
+                printf "  ${G}✓${N}  %-9s ${D}%s${N}\n" "OK" "$dest"
+                echo o >> "$tmp"
+            else
+                printf "  ${R}✗${N}  %-9s ${D}%s${N}\n" "CONFLICT" "$dest"
+                echo c >> "$tmp"
+            fi
+        elif [ -e "$dest" ]; then
+            printf "  ${R}✗${N}  %-9s ${D}%s${N}\n" "CONFLICT" "$dest"
+            echo c >> "$tmp"
         else
-            for pkg in $PKGS; do install_pkg "$pkg"; done
+            printf "  ${Y}⚠${N}  %-9s ${D}%s${N}\n" "MISSING" "$dest"
+            echo m >> "$tmp"
         fi
+    done
+    
+    ok=$(grep -c '^o$' "$tmp" 2>/dev/null) || ok=0
+    conflict=$(grep -c '^c$' "$tmp" 2>/dev/null) || conflict=0
+    missing=$(grep -c '^m$' "$tmp" 2>/dev/null) || missing=0
+    rm -f "$tmp"
+    
+    printf "\n  ${D}→ %d ok · %d conflict · %d missing${N}\n" "$ok" "$conflict" "$missing"
+}
+
+do_list() {
+    for d in "$repo"/*/; do
+        name=$(basename "$d")
+        case "$name" in .git|doas|local.d|bin) continue ;; esac
+        echo "  $name"
+    done
+}
+
+do_clean() {
+    head "cleaning broken symlinks"
+    find "$HOME" -maxdepth 4 -type l ! -exec test -e {} \; -print 2>/dev/null | while IFS= read -r l; do
+        case "$l" in "$HOME/.config/opencode"*) continue ;; esac
+        case "$(readlink "$l")" in "$repo"/*) 
+            printf "  ${R}✗${N}  ${D}%s${N}\n" "$l"
+            rm "$l"
+        ;; esac
+    done
+}
+
+do_deps() {
+    need_root deps
+    
+    if   command -v apk  >/dev/null; then cmd="apk add";               pm=apk
+    elif command -v apt  >/dev/null; then cmd="apt install -y";        pm=apt
+    elif command -v pacman >/dev/null; then cmd="pacman -S --noconfirm"; pm=pacman
+    elif command -v dnf  >/dev/null; then cmd="dnf install -y";        pm=dnf
+    elif command -v xbps-install >/dev/null; then cmd="xbps-install -S"; pm=xbps
+    else die "unknown package manager"
+    fi
+    
+    head "packages ($pm)"
+    $cmd $DEPS && ok "done"
+}
+
+do_services() {
+    need_root services
+    
+    if   command -v rc-update  >/dev/null; then init=openrc;  enable="rc-update add"
+    elif command -v systemctl  >/dev/null; then init=systemd; enable="systemctl enable"
+    elif command -v sv         >/dev/null; then init=runit;   enable="ln -s /etc/sv"
+    else die "unknown init system"
+    fi
+    
+    head "services ($init)"
+    for svc in $SERVICES; do
+        $enable "$svc" >/dev/null 2>&1 && ok "$svc" || warn "$svc"
+    done
+}
+
+do_doas() {
+    [ -f "$repo/doas/doas.conf" ] || die "doas.conf not found"
+    head "/etc/doas.conf"
+    
+    if command -v doas >/dev/null && [ -f /etc/doas.conf ]; then
+        doas install -m 0644 "$repo/doas/doas.conf" /etc/doas.conf
+    else
+        warn "bootstrap (su)"
+        su root -c "install -m 0644 '$repo/doas/doas.conf' /etc/doas.conf"
+    fi
+    ok "installed"
+}
+
+do_locald() {
+    [ -d "$repo/local.d" ] || die "local.d not found"
+    head "/etc/local.d"
+    
+    if command -v doas >/dev/null; then
+        doas mkdir -p /etc/local.d
+        doas install -m 0755 "$repo/local.d"/* /etc/local.d/
+    else
+        warn "bootstrap (su)"
+        su root -c "mkdir -p /etc/local.d && install -m 0755 '$repo/local.d'/* /etc/local.d/"
+    fi
+    ok "installed"
+}
+
+do_iosevka() {
+    head "Iosevka Term Nerd Font"
+    fonts="$HOME/.local/share/fonts/iosevkaterm"
+    mkdir -p "$fonts"
+    
+    printf "  ${D}downloading...${N}\n"
+    curl -sL 'https://github.com/ryanoasis/nerd-fonts/releases/latest/download/IosevkaTerm.zip' \
+        -o /tmp/iosevka.zip || die "download failed"
+    
+    printf "  ${D}extracting...${N}\n"
+    unzip -oq /tmp/iosevka.zip -d "$fonts" || die "unzip failed"
+    rm -f /tmp/iosevka.zip
+    
+    fc-cache -f "$fonts" 2>/dev/null
+    ok "installed → $fonts"
+}
+
+do_zrwm() {
+    need_root zrwm-build
+    head "zrwm"
+    
+    rm -rf /tmp/zrwm
+    git clone --depth 1 https://git.sr.ht/~zuki/zrwm /tmp/zrwm || die "clone failed"
+    
+    printf "  ${D}building...${N}\n"
+    make -C /tmp/zrwm >/dev/null 2>&1 || die "build failed (need zig, wayland-dev)"
+    
+    install -m 0755 /tmp/zrwm/zrwm /tmp/zrwm/zrwm-msg /usr/local/bin/
+    ok "installed"
+}
+
+# ─────────────────────────────────────────────────────────────
+# main
+# ─────────────────────────────────────────────────────────────
+
+case "${1:-help}" in
+    help|-h|--help)
+        cat <<EOF
+  ${B}packages${N}
+    install [pkg]    symlink packages
+    uninstall        remove symlinks
+    relink           uninstall + install
+    status           show link state
+    list             list packages
+    clean            remove broken symlinks
+
+  ${B}system${N}
+    deps             install packages (run as root)
+    services         enable services (run as root)
+    system-install   install doas.conf + local.d
+
+  ${B}extras${N}
+    iosevka          install Iosevka Nerd Font
+    zrwm-build       build zrwm from source
+    bootstrap        deps + install + services
+    update           git pull + relink
+EOF
         ;;
-    uninstall)
-        for pkg in $PKGS; do
-            dir="$REPO/$pkg"
-            [ -d "$dir" ] || continue
-            printf "  ${BOLD}${CYAN}─── %s ───${NC}\n" "$pkg"
-            (cd "$dir" && find . -type f | while read -r f; do
-                rel="${f#./}"
-                dest="$PREFIX/$rel"
-                src="$(pwd)/$rel"
-                if [ -L "$dest" ] && [ "$(readlink "$dest")" = "$src" ]; then
-                    rm "$dest" && printf "    ${RED}✗${NC}  ${DIM}%s${NC}\n" "$dest"
-                fi
-            done)
-        done
-        ;;
-    relink)
-        "$0" uninstall
-        "$0" install
-        ;;
-    status)
-        ok=0; conflict=0; missing=0
-        for pkg in $PKGS; do
-            dir="$REPO/$pkg"
-            [ -d "$dir" ] || continue
-            printf "  ${BOLD}${CYAN}─── %s ───${NC}\n" "$pkg"
-            cd "$dir"
-            find . -type f > /tmp/.dotfiles-status-$$
-            while read -r f; do
-                rel="${f#./}"
-                dest="$PREFIX/$rel"
-                src="$(pwd)/$rel"
-                if [ -L "$dest" ] && [ "$(readlink "$dest")" = "$src" ]; then
-                    printf "  ${GREEN}✓${NC}  OK       ${DIM}%s${NC}\n" "$dest"
-                    ok=$((ok + 1))
-                elif [ -e "$dest" ]; then
-                    printf "  ${RED}✗${NC}  CONFLICT ${DIM}%s${NC}\n" "$dest"
-                    conflict=$((conflict + 1))
-                else
-                    printf "  ${YELLOW}⚠${NC}  MISSING  ${DIM}%s${NC}\n" "$dest"
-                    missing=$((missing + 1))
-                fi
-            done < /tmp/.dotfiles-status-$$
-            rm -f /tmp/.dotfiles-status-$$
-            cd "$REPO"
-        done
-        printf "\n  ${DIM}→ %d OK, %d conflict, %d missing${NC}\n" "$ok" "$conflict" "$missing"
-        ;;
-    list)
-        for pkg in $PKGS; do echo "$pkg"; done
-        ;;
-    clean)
-        printf "  ${BOLD}${CYAN}─── cleaning broken symlinks ───${NC}\n"
-        find "$PREFIX" -maxdepth 4 -type l ! -exec test -e {} \; -print 2>/dev/null | \
-        while read -r l; do
-            case "$l" in
-                "$PREFIX/.config/opencode"*) ;;
-                *) case "$(readlink "$l")" in
-                    "$REPO"/*) printf "  ${RED}✗${NC}  ${DIM}%s${NC}\n" "$l"; rm "$l" ;;
-                esac ;;
-            esac
-        done
-        ;;
-    help|--help|-h)
-        usage
-        ;;
-    *)
-        dir="$REPO/$cmd"
-        if [ -d "$dir" ]; then
-            install_pkg "$cmd"
-        else
-            printf "  ${RED}✗${NC}  unknown command or package: %s\n" "$cmd" >&2
-            printf "\n" >&2
-            usage
-        fi
+    
+    install)      do_install "$2" ;;
+    uninstall)    do_uninstall ;;
+    relink)       do_uninstall; do_install ;;
+    status)       do_status ;;
+    list)         do_list ;;
+    clean)        do_clean ;;
+    
+    deps)         do_deps ;;
+    services)     do_services ;;
+    system-install) do_doas; do_locald ;;
+    doas-install) do_doas ;;
+    locald-install) do_locald ;;
+    
+    iosevka)      do_iosevka ;;
+    opencode)     curl -fsSL https://opencode.ai/install | sh ;;
+    zrwm-build)   do_zrwm ;;
+    
+    bootstrap)    do_deps; do_install; do_services; ok "bootstrap complete" ;;
+    update)       head "update"; git pull --ff-only; do_uninstall; do_install; ok "done" ;;
+    
+    *)  [ -d "$repo/$1" ] && { do_install "$1"; exit 0; }
+        die "unknown: $1"
         ;;
 esac

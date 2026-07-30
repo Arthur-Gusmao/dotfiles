@@ -12,10 +12,9 @@ zrwm-msg clear-binds
 # ─── launchers ───
 zrwm-msg bind $modkey,shift Return spawn foot
 zrwm-msg bind $modkey d spawn mew-run -b
-zrwm-msg bind $modkey,shift p spawn /home/aw/.local/bin/flatpak-wmenu.sh
-zrwm-msg bind $modkey n spawn foot -e rover
 zrwm-msg bind $modkey Escape spawn waylock -init-color 0x282828 -input-color 0x83a598 -fail-color 0xfb4934
-zrwm-msg bind $modkey,shift s spawn "grim -g \"$(slurp)\" - | wl-copy"
+# single quotes: $(slurp) expands on keypress, not at init
+zrwm-msg bind $modkey,shift s spawn 'grim -g "$(slurp)" - | wl-copy'
 
 # ─── window management ───
 zrwm-msg bind $modkey,shift c killwindow
@@ -36,9 +35,9 @@ zrwm-msg bind $modkey l setmfact 0.05
 # ─── reload ───
 zrwm-msg bind $modkey r reload
 
-# ─── layouts ───
+# ─── layouts ───  (shift+s is screenshot; float on shift+f)
 zrwm-msg bind $modkey,shift w setlayout split_tile
-zrwm-msg bind $modkey,shift s setlayout float
+zrwm-msg bind $modkey,shift f setlayout float
 zrwm-msg bind $modkey,shift d setlayout deck
 
 # ─── tags ───
@@ -77,7 +76,7 @@ zrwm-msg xkb-rule default -layout us -variant altgr-intl
 zrwm-msg input-rule -tap-to-click 1
 
 # ─── appearance ───
-zrwm-msg borderpx 4
+zrwm-msg borderpx 1
 zrwm-msg bordercolor 665c54ff
 zrwm-msg focuscolor 83a598ff
 zrwm-msg setcursor plan9 24
@@ -86,8 +85,8 @@ zrwm-msg setcursor plan9 24
 zrwm-msg rule-add -appid steam -float -inverse_title Steam
 zrwm-msg rule-add -appid "steam_app_" -float
 zrwm-msg rule-add -appid xdg-desktop-portal-gtk -float
-zrwm-msg rule-add -appid firefox -tags $((1 << 0)) -followtags
-zrwm-msg rule-add -appid firefox -title "Picture-in-Picture" -float
+zrwm-msg rule-add -appid librewolf -tags $((1 << 0)) -followtags
+zrwm-msg rule-add -appid librewolf -title "Picture-in-Picture" -float
 
 # ─── initial layout ───
 zrwm-msg setlayout 0

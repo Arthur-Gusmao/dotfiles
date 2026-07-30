@@ -6,7 +6,6 @@ SOH=$(printf '\001')
 STX=$(printf '\002')
 umask 022
 export CDPATH=".:$HOME:$HOME/Projects"
-_cmd_start=""
 # ---------------------------------------------------------------------------
 if [ -n "$KSH_VERSION" ]; then
     set -o emacs
@@ -24,7 +23,6 @@ if [ -n "$KSH_VERSION" ]; then
     export HISTCONTROL=ignoredups:ignorespace
     bind -m '^[s=^Adoas ^E'
 fi
-preexec() { _cmd_start=$SECONDS; }
 # ---------------------------------------------------------------------------
 _c() {
     _c_out="${SOH}${ESC}[${1}m${STX}${2}${SOH}${ESC}[0m${STX}"
@@ -99,13 +97,6 @@ _prompt_line() {
     _vcs
     _jobs
     printf '%s%s%s ' "$_pdir_out" "$_vcs_out" "$_jobs_out"
-    if [ -n "${_cmd_start:-}" ]; then
-        _elapsed=$(( SECONDS - _cmd_start ))
-        if [ "$_elapsed" -ge 2 ]; then
-            _c '2;37' "${_elapsed}s"
-            printf '%s ' "$_c_out"
-        fi
-    fi
     if [ "$st" = 0 ]; then
         _c '1;32' '❯'
     else
