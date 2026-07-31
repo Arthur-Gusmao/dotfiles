@@ -11,7 +11,7 @@ zrwm-msg clear-binds
 
 # ─── launchers ───
 zrwm-msg bind $modkey,shift Return spawn foot
-zrwm-msg bind $modkey d spawn mew-run -b
+zrwm-msg bind $modkey p spawn mew-run -b
 zrwm-msg bind $modkey Escape spawn waylock -init-color 0x282828 -input-color 0x83a598 -fail-color 0xfb4934
 # single quotes: $(slurp) expands on keypress, not at init
 zrwm-msg bind $modkey,shift s spawn 'grim -g "$(slurp)" - | wl-copy'

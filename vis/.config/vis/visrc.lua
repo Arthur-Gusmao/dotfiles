@@ -2,10 +2,20 @@ require('vis')
 
 vis.events.subscribe(vis.events.WIN_OPEN, function(win)
 	vis:command('set theme gruvbox')
-	vis:command('set autoindent')
-	vis:command('set expandtab')
-	vis:command('set tabwidth 2')
-	vis:command('set relativenumber')
-	vis:command('set ignorecase on')
+
+	win.options.autoindent = true
+	win.options.tabwidth = 2
+	win.options.relativenumber = true
+	win.options.ignorecase = true
+
+	local name = win.file and win.file.name or ""
+
+	if name:match("Makefile$") or
+		name:match("GNUmakefile$") or
+		name:match("%.mk$") then
+		win.options.expandtab = false
+	else
+		win.options.expandtab = true
+	end
 end)
 
