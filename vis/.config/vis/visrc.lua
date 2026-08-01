@@ -2,6 +2,7 @@ require('vis')
 
 vis.events.subscribe(vis.events.WIN_OPEN, function(win)
 	vis:command('set theme gruvbox')
+	vis:command('set relativenumber')
 
 	win.options.autoindent = true
 	win.options.tabwidth = 2

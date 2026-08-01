@@ -18,12 +18,12 @@ fi
 DEPS="foot mksh tmux kakoune vis qutebrowser librewolf xdg-desktop-portal-gtk
     river zig wayland-dev wlr-randr grim slurp wl-clipboard polkit xdg-desktop-portal-wlr
     wbg waylock wlopm mako bash fcft-dev pixman-dev pipewire-alsa xdg-desktop-portal
-    util-linux shadow build-base libxkbcommon-dev pipewire-webrtc
+    util-linux shadow build-base libxkbcommon-dev pipewire-webrtc bmake
     wayidle jujutsu git wireplumber pipewire playerctl brightnessctl
     doas seatd dbus zzz less curl ronn wayland-protocols samurai
-    font-terminus font-inconsolata font-dejavu font-noto meson
-    font-noto-cjk font-awesome font-noto-extra font-vollkorn
-    font-misc-cyrillic font-mutt-misc font-screen-cyrillic
+    font-terminus font-inconsolata font-dejavu font-noto meson podman
+    font-noto-cjk font-awesome font-noto-extra font-vollkorn distrobox
+    font-misc-cyrillic font-mutt-misc font-screen-cyrillic iptables
     font-winitzki-cyrillic font-cronyx-cyrillic fastfetch flatpak
     font-noto-thai font-noto-tibetan font-ipa pipewire-pulse pipewire-jack
     font-sony-misc font-jis-misc font-isas-misc font-arabic-misc
@@ -32,7 +32,7 @@ DEPS="foot mksh tmux kakoune vis qutebrowser librewolf xdg-desktop-portal-gtk
     font-noto-hebrew font-noto-lao font-noto-malayalam
     font-noto-tamil font-noto-thaana"
 
-SERVICES="local seatd dbus polkit"
+SERVICES="local seatd dbus polkit cgroups"
 
 EXCL="! -path */.git/* ! -path */doas/* ! -path */local.d/* ! -path */libinput/* ! -path */bin/*"
 

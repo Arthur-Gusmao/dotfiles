@@ -117,6 +117,7 @@ alias tn='tmux new-session -s'
 alias tl='tmux list-sessions'
 alias ta='tmux attach-session'
 alias sudo='doas'
+alias packettracer='QT_QPA_PLATFORM=xcb packettracer'
 # ---------------------------------------------------------------------------
 mkd() { mkdir -p "$1" && cd "$1"; }
 up() {
