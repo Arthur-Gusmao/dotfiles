@@ -4,7 +4,6 @@
 cd "$(dirname "$0")/.." || exit 1
 repo=$(pwd)
 
-# cores (byte ESC real — funciona em printf E heredoc; desativa sem tty)
 if [ -t 1 ]; then
     esc=$(printf '\033')
     R="${esc}[31m" G="${esc}[32m" Y="${esc}[33m"
@@ -17,9 +16,9 @@ fi
 
 DEPS="foot mksh tmux kakoune vis qutebrowser librewolf xdg-desktop-portal-gtk
     river zig wayland-dev wlr-randr grim slurp wl-clipboard polkit xdg-desktop-portal-wlr
-    wbg waylock wlopm fnott bash fcft-dev pixman-dev pipewire-alsa xdg-desktop-portal
-    util-linux shadow build-base libxkbcommon-dev pipewire-webrtc bmake
-    wayidle jujutsu git wireplumber pipewire playerctl brightnessctl
+    wbg waylock wlopm bash fcft-dev pixman-dev pipewire-alsa xdg-desktop-portal
+    util-linux shadow build-base libxkbcommon-dev pipewire-webrtc bmake xdg-desktop-portal-dev
+    wayidle jujutsu git wireplumber pipewire playerctl brightnessctl fnott
     doas seatd dbus zzz less curl ronn wayland-protocols samurai
     font-terminus font-inconsolata font-dejavu font-noto meson podman
     font-noto-cjk font-awesome font-noto-extra font-vollkorn distrobox
@@ -233,14 +232,19 @@ do_iosevka() {
 do_zrwm() {
     need_root zrwm-build
     head "zrwm"
-    
-    rm -rf /tmp/zrwm
-    git clone --depth 1 https://git.sr.ht/~zuki/zrwm /tmp/zrwm || die "clone failed"
-    
+
+    if [ -d "$HOME/src/zrwm" ]; then
+        bld="$HOME/src/zrwm"
+    else
+        rm -rf /tmp/zrwm
+        git clone --depth 1 https://git.sr.ht/~zuki/zrwm /tmp/zrwm || die "clone failed"
+        bld="/tmp/zrwm"
+    fi
+
     printf "  ${D}building...${N}\n"
-    make -C /tmp/zrwm >/dev/null 2>&1 || die "build failed (need zig, wayland-dev)"
-    
-    install -m 0755 /tmp/zrwm/zrwm /tmp/zrwm/zrwm-msg /usr/local/bin/
+    make -C "$bld" >/dev/null 2>&1 || die "build failed (need zig, wayland-dev)"
+
+    install -m 0755 "$bld/zrwm" "$bld/zrwm-msg" /usr/local/bin/
     ok "installed"
 }
 
