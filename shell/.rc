@@ -3,7 +3,6 @@
 HISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/history"
 ESC=$(printf '\033')
 SOH=$(printf '\001')
-STX=$(printf '\002')
 umask 022
 export CDPATH=".:$HOME:$HOME/Projects"
 # ---------------------------------------------------------------------------
@@ -19,13 +18,13 @@ if [ -n "$KSH_VERSION" ]; then
     set -A complete_kill_1 -- -9 -HUP -TERM
     set -A complete_doas_1 -- do
     set -A complete_wpctl_1 -- set-volume set-mute set-default get-volume sinks list
-    set -A complete_makoctl_1 -- dismiss restore list actions
+    set -A complete_fnottctl_1 -- dismiss dismiss-with-default-action actions list pause unpause status quit
     export HISTCONTROL=ignoredups:ignorespace
     bind -m '^[s=^Adoas ^E'
 fi
 # ---------------------------------------------------------------------------
 _c() {
-    _c_out="${SOH}${ESC}[${1}m${STX}${2}${SOH}${ESC}[0m${STX}"
+    _c_out="${SOH}${ESC}[${1}m${SOH}${2}${SOH}${ESC}[0m${SOH}"
 }
 _pdir() {
     typeset d
@@ -104,7 +103,7 @@ _prompt_line() {
     fi
     printf '%s' "$_c_out"
 }
-PS1='$(_c 1\;34 "$(_prompt_line $?)"; printf "%s" "$_c_out") '
+PS1='$(_c 1\;34 "$(_prompt_line $?)"; printf "${SOH}\r%s" "$_c_out") '
 PS2='> '
 # ---------------------------------------------------------------------------
 alias lc='/bin/ls'
@@ -151,6 +150,62 @@ ex() {
         *.Z)        uncompress "$1" ;;
         *)          echo "extract: unrecognized format: $1" ;;
     esac
+}
+o() {
+    [ "$#" -eq 0 ] && { echo "o: usage: o <file>..." >&2; return 1; }
+    for f in "$@"; do
+        [ -e "$f" ] || { echo "o: no such file: $f" >&2; continue; }
+        if [ -d "$f" ]; then
+            cd "$f" || echo "o: cd failed: $f" >&2
+            continue
+        fi
+        case "$f" in
+        *.png|*.jpg|*.jpeg|*.gif|*.bmp|*.webp|*.avif|*.ico|*.tif|*.tiff|*.svg|*.heic)
+            if   command -v swayimg >/dev/null 2>&1; then swayimg "$f"
+            elif command -v imv     >/dev/null 2>&1; then imv "$f"
+            elif command -v sxiv    >/dev/null 2>&1; then sxiv "$f"
+            elif command -v feh     >/dev/null 2>&1; then feh "$f"
+            elif command -v chafa   >/dev/null 2>&1; then chafa "$f"
+            elif command -v viu     >/dev/null 2>&1; then viu "$f"
+            else echo "o: no image viewer for $f" >&2; fi ;;
+        *.pdf|*.PDF|*.ps|*.djvu|*.epub)
+            if   command -v zathura  >/dev/null 2>&1; then zathura "$f"
+            elif command -v mupdf    >/dev/null 2>&1; then mupdf "$f"
+            elif command -v mutool   >/dev/null 2>&1; then mutool draw -F txt "$f" | less
+            elif command -v pdftotext >/dev/null 2>&1; then pdftotext "$f" - | less
+            else echo "o: no document viewer for $f" >&2; fi ;;
+        *.mp4|*.mkv|*.webm|*.avi|*.mov|*.mpg|*.mpeg|*.ts|*.flv|*.wmv|*.m4v|*.ogv|*.gifv)
+            if   command -v mpv    >/dev/null 2>&1; then mpv "$f"
+            elif command -v ffplay >/dev/null 2>&1; then ffplay "$f"
+            else echo "o: no video player for $f" >&2; fi ;;
+        *.mp3|*.flac|*.wav|*.ogg|*.oga|*.opus|*.m4a|*.aac|*.wma|*.ape|*.aiff|*.mid|*.midi|*.mod|*.s3m|*.xm)
+            if   command -v mpv      >/dev/null 2>&1; then mpv "$f"
+            elif command -v ffplay   >/dev/null 2>&1; then ffplay -nodisp "$f"
+            elif command -v timidity >/dev/null 2>&1; then timidity "$f"
+            else echo "o: no audio player for $f" >&2; fi ;;
+        *.html|*.htm|*.xhtml)
+            if   command -v qutebrowser >/dev/null 2>&1; then qutebrowser "$f"
+            elif command -v lynx        >/dev/null 2>&1; then lynx "$f"
+            elif command -v w3m         >/dev/null 2>&1; then w3m "$f"
+            elif command -v links       >/dev/null 2>&1; then links "$f"
+            else echo "o: no browser for $f" >&2; fi ;;
+        *.odt|*.ods|*.odp|*.doc|*.docx|*.xls|*.xlsx|*.ppt|*.pptx|*.csv|*.tsv)
+            if   command -v libreoffice >/dev/null 2>&1; then libreoffice "$f"
+            else echo "o: no office suite for $f" >&2; fi ;;
+        *.torrent)
+            if   command -v rtorrent  >/dev/null 2>&1; then rtorrent "$f"
+            elif command -v deluge    >/dev/null 2>&1; then deluge "$f"
+            elif command -v transmission-cli >/dev/null 2>&1; then transmission-cli "$f"
+            else echo "o: no torrent client for $f" >&2; fi ;;
+        *)
+            if [ -n "$EDITOR" ] && command -v "$EDITOR" >/dev/null 2>&1; then
+                "$EDITOR" "$f"
+            elif command -v kak >/dev/null 2>&1; then kak "$f"
+            elif command -v vis >/dev/null 2>&1; then vis "$f"
+            elif command -v vim >/dev/null 2>&1; then vim "$f"
+            else echo "o: no editor for $f" >&2; fi ;;
+        esac
+    done
 }
 pushd() {
     [ -z "$1" ] && return 1

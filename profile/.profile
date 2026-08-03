@@ -30,6 +30,8 @@ export CC=cc
 export CFLAGS="-O2 -pipe"
 command -v nproc >/dev/null 2>&1 && export MAKEFLAGS="-j$(nproc)"
 
+export NINJA_STATUS="[36;1m[%e (s): %s/%t][0m "
+
 # ─── default programs ────────────────────────────────────────────────
 export EDITOR=vis
 export VISUAL=vis

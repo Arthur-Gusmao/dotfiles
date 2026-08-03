@@ -32,11 +32,11 @@
 - **Emoji**: ✓ ✗ ⚠ ─── for status indicators.
 - **POSIX sh only**: `#!/bin/sh -e`, no bashisms.
 - **No RC files** (no `.bashrc`, `.zshrc`). The `shell/` package provides `.rc` for shell init.
-- **Wayland is optional**: river, foot, mako don't define the shell/editor/terminal in a TTY or over SSH.
+- **Wayland is optional**: river, foot, fnott don't define the shell/editor/terminal in a TTY or over SSH.
 
 ## Architecture
 
-- **Single `bin/dotfiles`** — POSIX `sh` handles everything: install, uninstall, status, list, relink, clean, deps, services, system-install, bootstrap, update, iosevka, opencode, zrwm-build.
+- **Single `bin/dotfiles`** — POSIX `sh` handles everything: install, uninstall, status, list, relink, clean, deps, services, system-install, bootstrap, update, iosevka, opencode, zrwm-build, mew-build.
 - **Packages auto-discovered** — any directory at repo root with files is a package. `.git`, `doas`, `local.d`, `bin` excluded.
 - **No Makefile, no justfile, no plan9port** — pure `sh`.
 - **No `find | while` subshell scoping issue** — uses `for f in $(find ...)` instead of piping into `while read`.
@@ -62,6 +62,7 @@
 | `bin/dotfiles iosevka` | Install Iosevka Term Nerd Font |
 | `bin/dotfiles opencode` | Install opencode via curl pipe |
 | `bin/dotfiles zrwm-build` | Build & install zrwm from source |
+| `bin/dotfiles mew-build` | Build & install mew from source |
 
 ## river / zrwm
 

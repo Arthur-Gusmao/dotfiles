@@ -8,7 +8,7 @@ Personal configuration for a small, direct, text-oriented environment.
 - **POSIX shell** — scripts use `#!/bin/sh`, `set -eu`, stdin/stdout
 - **No bashisms** — avoid GNU extensions when POSIX is enough
 - **Machine-local** — differences are few, local, and explicit
-- **Wayland optional** — river, foot, mako don't define the shell/editor/terminal in a TTY or over SSH
+- **Wayland optional** — river, foot, fnott don't define the shell/editor/terminal in a TTY or over SSH
 
 ## Layout
 
@@ -67,6 +67,7 @@ files is a package. No need to register new ones.
 | `bin/dotfiles iosevka` | Install Iosevka Term Nerd Font |
 | `bin/dotfiles opencode` | Install opencode |
 | `bin/dotfiles zrwm-build` | Build & install zrwm from source |
+| `bin/dotfiles mew-build` | Build & install mew from source |
 
 Installation never overwrites existing files — resolve conflicts manually.
 `uninstall` only removes links pointing exactly at this repository.

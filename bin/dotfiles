@@ -17,7 +17,7 @@ fi
 
 DEPS="foot mksh tmux kakoune vis qutebrowser librewolf xdg-desktop-portal-gtk
     river zig wayland-dev wlr-randr grim slurp wl-clipboard polkit xdg-desktop-portal-wlr
-    wbg waylock wlopm mako bash fcft-dev pixman-dev pipewire-alsa xdg-desktop-portal
+    wbg waylock wlopm fnott bash fcft-dev pixman-dev pipewire-alsa xdg-desktop-portal
     util-linux shadow build-base libxkbcommon-dev pipewire-webrtc bmake
     wayidle jujutsu git wireplumber pipewire playerctl brightnessctl
     doas seatd dbus zzz less curl ronn wayland-protocols samurai
@@ -244,6 +244,20 @@ do_zrwm() {
     ok "installed"
 }
 
+do_mew() {
+    need_root mew-build
+    head "mew"
+    
+    rm -rf /tmp/mew
+    git clone --depth 1 git@github.com:Arthur-Gusmao/mew /tmp/mew || die "clone failed"
+    
+    printf "  ${D}building...${N}\n"
+    make -C /tmp/mew >/dev/null 2>&1 || die "build failed (need fcft-dev, wayland-dev, libxkbcommon-dev)"
+    
+    install -m 0755 /tmp/mew/mew /tmp/mew/mew-run /usr/local/bin/
+    ok "installed"
+}
+
 # ─────────────────────────────────────────────────────────────
 # main
 # ─────────────────────────────────────────────────────────────
@@ -268,6 +282,7 @@ case "${1:-help}" in
   ${B}extras${N}
     iosevka          install Iosevka Nerd Font
     zrwm-build       build zrwm from source
+    mew-build        build mew from source
     bootstrap        deps + install + services
     update           git pull + relink
 EOF
@@ -290,6 +305,7 @@ EOF
     iosevka)      do_iosevka ;;
     opencode)     curl -fsSL https://opencode.ai/install | sh ;;
     zrwm-build)   do_zrwm ;;
+    mew-build)    do_mew ;;
     
     bootstrap)    do_deps; do_install; do_services; ok "bootstrap complete" ;;
     update)       head "update"; git pull --ff-only; do_uninstall; do_install; ok "done" ;;
