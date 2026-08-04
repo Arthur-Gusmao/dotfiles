@@ -16,6 +16,21 @@ zrwm-msg bind $modkey Escape spawn waylock -init-color 0x282828 -input-color 0x8
 # single quotes: $(slurp) expands on keypress, not at init
 zrwm-msg bind $modkey,shift s spawn 'grim -g "$(slurp)" - | wl-copy'
 
+# ─── scratchpad ─── (classic river)
+# bit 20 reserved for scratchpads, outside the 1-9 tag keys
+scratch_tag=$((1 << 20))
+all_but_scratch_tag=$(( ((1 << 32) - 1) ^ $scratch_tag ))
+# Super+Return: toggle scratch tag in the visible view (toggle-focused-tags)
+zrwm-msg bind $modkey Return toggleview ${scratch_tag}
+# Super+a: send focused window to the scratchpad (set-view-tags)
+zrwm-msg bind $modkey a tag ${scratch_tag}
+# spawn-tagmask: keep scratch tag off new windows unless the scratch view is focused
+zrwm-msg spawn-tagmask ${all_but_scratch_tag}
+# Super+BackSpace: spawn a floating foot on the scratchpad
+zrwm-msg bind $modkey BackSpace spawn foot -a scratchpad -W 160x40
+# rule: scratchpad appid always lands floating on the scratch tag
+zrwm-msg rule-add -exact_appid scratchpad -tags ${scratch_tag} -float
+
 # ─── window management ───
 zrwm-msg bind $modkey,shift c killwindow
 zrwm-msg bind $modkey,shift q exit
