@@ -233,8 +233,13 @@ do_zrwm() {
     need_root zrwm-build
     head "zrwm"
 
-    if [ -d "$HOME/src/zrwm" ]; then
-        bld="$HOME/src/zrwm"
+    # doas/sudo may run as root; use the invoking user's home for the fork
+    user="${DOAS_USER:-${SUDO_USER:-$(id -un)}}"
+    fork="$HOME/src/zrwm"
+    [ "$user" != "$(id -un)" ] && fork="$(getent passwd "$user" | cut -d: -f6)/src/zrwm"
+
+    if [ -d "$fork" ]; then
+        bld="$fork"
     else
         rm -rf /tmp/zrwm
         git clone --depth 1 https://git.sr.ht/~zuki/zrwm /tmp/zrwm || die "clone failed"
