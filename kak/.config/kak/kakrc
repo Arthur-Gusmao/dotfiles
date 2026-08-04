@@ -11,6 +11,12 @@ plug "lePerdu/kakboard" %{
     hook global WinCreate .* %{ kakboard-enable }
 }
 
+plug "andreyorst/powerline.kak" defer powerline_gruvbox %{
+    powerline-theme gruvbox
+} config %{
+    powerline-start
+}
+
 colorscheme gruvbox-dark
 
 set-option global tabstop 2
