@@ -13,7 +13,7 @@ if test -z "${XDG_RUNTIME_DIR}"; then
     export XDG_RUNTIME_DIR="/run/user/$(id -ru)"
 fi
 if test -d "$XDG_RUNTIME_DIR"; then
-  perms="$(stat -c '%a %u'"${XDG_RUNTIME_DIR}")"
+  perms="$(stat -c '%a %u' "${XDG_RUNTIME_DIR}")"
   if [ "${perms}" != "700 $(id -ru)" ]; then
     unset XDG_RUNTIME_DIR
     echo "WARNING! XDG_RUNTIME_DIR has incorrect permissions"
@@ -24,7 +24,7 @@ else
 fi
 
 # ─── path / toolchain ────────────────────────────────────────────────
-export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/bin:$PATH"
+export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/bin:$HOME/.local/share/cargo/bin:$PATH"
 
 export CC=cc
 export CFLAGS="-O2 -pipe"
@@ -33,9 +33,9 @@ command -v nproc >/dev/null 2>&1 && export MAKEFLAGS="-j$(nproc)"
 export NINJA_STATUS="[36;1m[%e (s): %s/%t][0m "
 
 # ─── default programs ────────────────────────────────────────────────
-export EDITOR=vis
-export VISUAL=vis
-export FCEDIT=vis
+export EDITOR=kak
+export VISUAL=kak
+export FCEDIT=kak
 export TERMINAL=foot
 export BROWSER=librewolf
 export PAGER=less

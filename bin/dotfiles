@@ -18,15 +18,15 @@ DEPS="foot mksh tmux kakoune vis qutebrowser librewolf xdg-desktop-portal-gtk
     river zig wayland-dev wlr-randr grim slurp wl-clipboard polkit xdg-desktop-portal-wlr
     wbg waylock wlopm bash fcft-dev pixman-dev pipewire-alsa xdg-desktop-portal
     util-linux shadow build-base libxkbcommon-dev pipewire-webrtc bmake xdg-desktop-portal-dev
-    wayidle jujutsu git wireplumber pipewire playerctl brightnessctl fnott
-    doas seatd dbus zzz less curl ronn wayland-protocols samurai
+    wayidle jujutsu git wireplumber pipewire playerctl brightnessctl fnott luajit
+    doas seatd dbus zzz less curl ronn wayland-protocols samurai kakoune-lsp fd
     font-terminus font-inconsolata font-dejavu font-noto meson podman
     font-noto-cjk font-awesome font-noto-extra font-vollkorn distrobox
     font-misc-cyrillic font-mutt-misc font-screen-cyrillic iptables
     font-winitzki-cyrillic font-cronyx-cyrillic fastfetch flatpak
     font-noto-thai font-noto-tibetan font-ipa pipewire-pulse pipewire-jack
     font-sony-misc font-jis-misc font-isas-misc font-arabic-misc
-    font-noto-arabic font-noto-armenian font-noto-cherokee
+    font-noto-arabic font-noto-armenian font-noto-cherokee clang-extra-tools
     font-noto-devanagari font-noto-ethiopic font-noto-georgian
     font-noto-hebrew font-noto-lao font-noto-malayalam
     font-noto-tamil font-noto-thaana"

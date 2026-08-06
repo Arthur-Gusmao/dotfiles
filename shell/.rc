@@ -1,4 +1,5 @@
-# ~/.rc
+#!/bin/sh
+
 # ---------------------------------------------------------------------------
 HISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/history"
 ESC=$(printf '\033')
