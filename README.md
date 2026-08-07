@@ -18,6 +18,7 @@ Each package directory mirrors its destination under `$HOME`:
 foot/.config/foot/foot.ini  →  ~/.config/foot/foot.ini
 river/.config/river/init    →  ~/.config/river/init
 shell/.rc                   →  ~/.rc
+localbin/.local/bin/startr  →  ~/.local/bin/startr
 ```
 
 `doas/doas.conf` is the exception: installed as a root-owned **copy** at

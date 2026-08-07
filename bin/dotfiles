@@ -33,7 +33,7 @@ DEPS="foot mksh tmux kakoune vis qutebrowser librewolf xdg-desktop-portal-gtk
 
 SERVICES="local seatd dbus polkit cgroups"
 
-EXCL="! -path */.git/* ! -path */doas/* ! -path */local.d/* ! -path */libinput/* ! -path */bin/*"
+EXCL="! -path */.git/* ! -path */doas/* ! -path */local.d/* ! -path */libinput/* ! -path "$repo/bin/*""
 
 # ─────────────────────────────────────────────────────────────
 # functions

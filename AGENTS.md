@@ -22,9 +22,11 @@
 ## Directory layout
 
 - Each subdirectory mirrors its `$HOME` path: `foot/.config/foot/foot.ini` → `~/.config/foot/foot.ini`
+- `localbin/.local/bin/*` → `~/.local/bin/*` (user scripts).
 - `doas/doas.conf` → **root-owned copy** at `/etc/doas.conf` (never a symlink).
 - `local.d/*` → `/etc/local.d/` (root-owned copies).
 - `bin/dotfiles` → CLI entry point.
+- `EXCL` excludes only the repo's own `bin/` (`$repo/bin/*`) — other `bin/` dirs (e.g. `localbin/.local/bin`) are valid packages.
 
 ## Style conventions
 
