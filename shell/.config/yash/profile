@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# yash never reads ~/.profile automatically (see man yash).
+# Load it here so login yash applies the same profile as any POSIX login shell.
+# Note: no [ -f ] guard — yash's [ is a substitutive built-in and fails
+# before the profile sets PATH on a bare login (empty PATH).
+. "$HOME/.profile"

@@ -15,11 +15,27 @@ Personal configuration for a small, direct, text-oriented environment.
 Each package directory mirrors its destination under `$HOME`:
 
 ```
-foot/.config/foot/foot.ini  →  ~/.config/foot/foot.ini
-river/.config/river/init    →  ~/.config/river/init
-shell/.rc                   →  ~/.rc
-localbin/.local/bin/startr  →  ~/.local/bin/startr
+foot/.config/foot/foot.ini     →  ~/.config/foot/foot.ini
+river/.config/river/init       →  ~/.config/river/init
+profile/.profile               →  ~/.profile
+shell/.config/yash/rc          →  ~/.config/yash/rc
+shell/.config/yash/profile     →  ~/.config/yash/profile
+localbin/.local/bin/startr     →  ~/.local/bin/startr
 ```
+
+`profile/.profile` is the single POSIX login profile. yash never reads
+`~/.profile` (nor `/etc/profile`) automatically (see `man yash`), so
+`~/.config/yash/profile` is a shim that sources it; the interactive rc
+sources it too for non-login shells.
+
+yash startup facts worth remembering:
+- Login reads `$XDG_CONFIG_HOME/yash/profile`, interactive reads `~/.config/yash/rc`.
+- `[`, `test`, `echo`, `printf` are *substitutive built-ins*: they need the
+  external binary on `PATH` and fail when `PATH` is empty (bare login). The
+  `.profile` therefore sets the system baseline (incl. `/sbin`) **first**,
+  using only `case`/`export`/parameter expansion.
+- yash history format is incompatible with other shells, so `HISTFILE` lives
+  at `~/.local/state/yash/history`.
 
 `doas/doas.conf` is the exception: installed as a root-owned **copy** at
 `/etc/doas.conf`, never a symlink.

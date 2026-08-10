@@ -1,9 +1,9 @@
 [user]
 	name = Arthur
-	email = arthurgusmao@proton.me
+	email = arthurgusmao@disroot.org
 
 [core]
-	editor = vis
+	editor = kak
 	autocrlf = input
 	pager = less -R
 

@@ -33,7 +33,8 @@
 - **ANSI color codes inline**: `\033[1m` etc. No external tools.
 - **Emoji**: ✓ ✗ ⚠ ─── for status indicators.
 - **POSIX sh only**: `#!/bin/sh -e`, no bashisms.
-- **No RC files** (no `.bashrc`, `.zshrc`). The `shell/` package provides `.rc` for shell init.
+- **No RC files** (no `.bashrc`, `.zshrc`). The `shell/` package provides `~/.config/yash/{rc,profile}` for shell init.
+- `~/.profile` (from `profile/`) is the single POSIX login profile. yash never reads it automatically, so `~/.config/yash/profile` is a shim that sources it, and the interactive rc sources it too for non-login shells. The PATH prepend in `.profile` is idempotent to survive the login+interactive double-load.
 - **Wayland is optional**: river, foot, fnott don't define the shell/editor/terminal in a TTY or over SSH.
 
 ## Architecture

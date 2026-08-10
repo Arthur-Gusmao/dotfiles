@@ -14,7 +14,7 @@ fi
 # config
 # ─────────────────────────────────────────────────────────────
 
-DEPS="foot mksh tmux kakoune vis qutebrowser librewolf xdg-desktop-portal-gtk
+DEPS="foot yash tmux kakoune vis qutebrowser librewolf xdg-desktop-portal-gtk
     river zig wayland-dev wlr-randr grim slurp wl-clipboard polkit xdg-desktop-portal-wlr
     wbg waylock wlopm bash fcft-dev pixman-dev pipewire-alsa xdg-desktop-portal
     util-linux shadow build-base libxkbcommon-dev pipewire-webrtc bmake xdg-desktop-portal-dev
@@ -63,9 +63,10 @@ do_install() {
     head "installing"
     depth="-mindepth 2"
     target="$repo"
-    [ -n "$1" ] && { target="$repo/$1"; depth=""; }
+    [ -n "$1" ] && { target="$repo/$1"; depth="-mindepth 0"; }
     
-    pkg_files "$target" "$depth" | while IFS= read -r f; do
+    set -f
+    for f in $(pkg_files "$target" "$depth"); do
         rel="${f#$repo/}"; dest="$HOME/${rel#*/}"
         mkdir -p "$(dirname "$dest")"
         
@@ -78,23 +79,27 @@ do_install() {
             printf "  ${G}✓${N}  ${D}%s${N}\n" "$dest"
         fi
     done
+    set +f
 }
 
 do_uninstall() {
     head "removing"
-    pkg_files | while IFS= read -r f; do
+    set -f
+    for f in $(pkg_files); do
         rel="${f#$repo/}"; dest="$HOME/${rel#*/}"
         [ -L "$dest" ] && [ "$(readlink "$dest")" = "$f" ] || continue
         rm "$dest"
         printf "  ${R}✗${N}  ${D}%s${N}\n" "$dest"
     done
+    set +f
 }
 
 do_status() {
     tmp=/tmp/dotfiles-status-$$
     : > "$tmp"
     
-    pkg_files | while IFS= read -r f; do
+    set -f
+    for f in $(pkg_files); do
         rel="${f#$repo/}"; dest="$HOME/${rel#*/}"
         if [ -L "$dest" ]; then
             if [ "$(readlink "$dest")" = "$f" ]; then
@@ -112,6 +117,7 @@ do_status() {
             echo m >> "$tmp"
         fi
     done
+    set +f
     
     ok=$(grep -c '^o$' "$tmp" 2>/dev/null) || ok=0
     conflict=$(grep -c '^c$' "$tmp" 2>/dev/null) || conflict=0
@@ -131,13 +137,15 @@ do_list() {
 
 do_clean() {
     head "cleaning broken symlinks"
-    find "$HOME" -maxdepth 4 -type l ! -exec test -e {} \; -print 2>/dev/null | while IFS= read -r l; do
+    set -f
+    for l in $(find "$HOME" -maxdepth 4 -type l ! -exec test -e {} \; -print 2>/dev/null); do
         case "$l" in "$HOME/.config/opencode"*) continue ;; esac
         case "$(readlink "$l")" in "$repo"/*) 
             printf "  ${R}✗${N}  ${D}%s${N}\n" "$l"
             rm "$l"
         ;; esac
     done
+    set +f
 }
 
 do_deps() {
@@ -211,6 +219,13 @@ do_libinput() {
     ok "installed"
 }
 
+do_services_list() {
+    head "configured services"
+    for svc in $SERVICES; do
+        printf "  %s\n" "$svc"
+    done
+}
+
 do_iosevka() {
     need_root iosevka
     head "Iosevka Term Nerd Font"
@@ -247,7 +262,7 @@ do_zrwm() {
     fi
 
     printf "  ${D}building...${N}\n"
-    make -C "$bld" >/dev/null 2>&1 || die "build failed (need zig, wayland-dev)"
+    make -C "$bld" || die "build failed (need zig, wayland-dev)"
 
     install -m 0755 "$bld/zrwm" "$bld/zrwm-msg" /usr/local/bin/
     ok "installed"
@@ -261,7 +276,7 @@ do_mew() {
     git clone --depth 1 git@github.com:Arthur-Gusmao/mew /tmp/mew || die "clone failed"
     
     printf "  ${D}building...${N}\n"
-    make -C /tmp/mew >/dev/null 2>&1 || die "build failed (need fcft-dev, wayland-dev, libxkbcommon-dev)"
+    make -C /tmp/mew || die "build failed (need fcft-dev, wayland-dev, libxkbcommon-dev)"
     
     install -m 0755 /tmp/mew/mew /tmp/mew/mew-run /usr/local/bin/
     ok "installed"
@@ -285,6 +300,7 @@ case "${1:-help}" in
   ${B}system${N}
     deps             install packages (run as root)
     services         enable services (run as root)
+    services-list    list configured services
     system-install   install doas.conf + local.d + libinput quirks
     libinput-install install libinput quirks
 
@@ -306,6 +322,7 @@ EOF
     
     deps)         do_deps ;;
     services)     do_services ;;
+    services-list) do_services_list ;;
     system-install) do_doas; do_locald; do_libinput ;;
     doas-install) do_doas ;;
     locald-install) do_locald ;;

@@ -1,0 +1,124 @@
+#!/bin/sh
+
+if [ -f /etc/yashrc ]; then
+  . /etc/yashrc
+fi
+
+if [ -f ~/.profile ]; then
+  . ~/.profile
+fi
+# ---------------------------------------------------------------------------
+# yash history format is incompatible with mksh/bash, so keep a separate file
+HISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/yash/history"
+mkdir -p "${HISTFILE%/*}"
+umask 022
+export CDPATH=".:$HOME:$HOME/Projects"
+# ---------------------------------------------------------------------------
+set -o emacs
+set -o ignoreeof
+set -o pipefail
+set -o markdirs
+set -o histspace
+set -o notify-le
+set -o le-no-conv-meta
+# yash extensions (off by default)
+set -o brace-expand
+set -o extended-glob
+# command line prediction (fish-style autosuggestions from history)
+set -o le-predict
+#set -o le-predict-empty
+export HISTRMDUP=1
+# ---------------------------------------------------------------------------
+# Native yash prompt notation (\f<specs>. sets font/colors; \fd. resets).
+# Pure-style prompt: line 1 = dir + git info, line 2 = ❯ (green/red by status).
+# PS1S styles the typed input, PS1P the predicted (autosuggest) part.
+export PS1S='\fwt.'
+export PS1P='\fct.'
+_prompt_line() {
+    typeset st d g first br stxt ah bd
+    st="$1"
+    d=${PWD#"$HOME"}
+    [ "$d" = "$PWD" ] && d="$PWD" || d="~$d"
+    if [ ${#d} -gt 40 ]; then
+        d="...${d#"${d%????????????????????????????????????}"}"
+    fi
+    printf '\\fbt.%s' "$d"
+    g=$(git status --branch --porcelain 2>/dev/null)
+    if [ -n "$g" ]; then
+        first=${g%%$'\n'*}
+        case $first in
+        '## '*)
+            br=${first#'## '}
+            br=${br%%...*}
+            case $br in
+            *'HEAD'*|*'No commits yet on'*) ;;
+            *)
+                printf ' \\fyt.%s' "$br"
+                case $g in
+                *$'\n'UU\ *) printf '\\frt.✗' ;;
+                *$'\n'*)      printf '\\frt.*' ;;
+                esac
+                stxt=${first#*...}
+                case $stxt in
+                *'ahead '*)
+                    ah=${stxt##*ahead }
+                    ah=${ah%%,*}
+                    printf '\\fct.↑%s' "$ah"
+                    ;;
+                esac
+                case $stxt in
+                *'behind '*)
+                    bd=${stxt##*behind }
+                    bd=${bd%%]*}
+                    printf '\\fct.↓%s' "$bd"
+                    ;;
+                esac
+                ;;
+            esac
+            ;;
+        esac
+    fi
+    if [ "$st" = 0 ]; then
+        printf ' \\fgt.❯\\fd. '
+    else
+        printf ' \\frt.❯\\fd. '
+    fi
+}
+PS1='$(_prompt_line $?)'
+PS2='> '
+# ---------------------------------------------------------------------------
+alias g='grep'
+alias l='$PAGER'
+alias --global L='|$PAGER'
+alias --global N='>/dev/null 2>&1' N1='>/dev/null' N2='2>/dev/null'
+alias lc='/bin/ls'
+alias ls='ls -1 --group-directories-first'
+alias cls='printf "\033c"'
+alias mkdir='mkdir -p'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias tn='tmux new-session -s'
+alias tl='tmux list-sessions'
+alias ta='tmux attach-session'
+alias sudo='doas'
+alias packettracer='QT_QPA_PLATFORM=xcb packettracer'
+# ---------------------------------------------------------------------------
+mkd() { mkdir -p "$1" && cd "$1"; }
+up() {
+    n="${1:-1}"
+    p=''
+    while [ "$n" -gt 0 ]; do
+        p="../$p"
+        n=$((n - 1))
+    done
+    cd "$p"
+}
+# ---------------------------------------------------------------------------
+# autocd: typing a directory name changes into it (official yash idiom)
+_autocd()
+if [ -d "$1" ]; then
+  HANDLED=true
+  cd -- "$@"
+  break -i
+fi
+COMMAND_NOT_FOUND_HANDLER=("$COMMAND_NOT_FOUND_HANDLER" '_autocd "$@"')
