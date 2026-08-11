@@ -12,6 +12,16 @@ esac
 PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/bin:$HOME/.local/share/cargo/bin:$PATH"
 export PATH
 
+# ─── plan9port ───────────────────────────────────────────────────────
+# Append (never prepend) so coreutils win; use `9` for plan9 versions.
+if [ -d /usr/lib/plan9/bin ]; then
+    export PLAN9=/usr/lib/plan9
+    case ":$PATH:" in
+        *":/usr/lib/plan9/bin:"*) ;;
+        *) PATH="$PATH:/usr/lib/plan9/bin" ;;
+    esac
+fi
+
 # ─── locale ──────────────────────────────────────────────────────────
 # /etc/profile.d/20locale.sh is skipped too
 export LANG=${LANG:-C.UTF-8}

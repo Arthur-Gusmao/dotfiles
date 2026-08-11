@@ -1,0 +1,6 @@
+#!/bin/sh
+
+fontsrv &
+sleep 1
+
+exec 9 acme -f /mnt/font/IosevkaTermNFM/14a/font
