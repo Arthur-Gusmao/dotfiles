@@ -72,8 +72,6 @@ export CARGO_HOME="$XDG_DATA_HOME/cargo"
 export RUSTUP_HOME="$XDG_DATA_HOME/rustup"
 
 # ─── session / wayland ───────────────────────────────────────────────
-export DBUS_SESSION_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR:-/run/user/$(id -ru)}/bus"
-
 export XDG_SESSION_TYPE=wayland
 export QT_QPA_PLATFORM=wayland
 export QTWEBENGINE_FORCE_USE_GBM=0
