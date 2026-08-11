@@ -1,7 +1,7 @@
 #!/bin/sh -e
 # dotfiles — symlink manager
 
-cd "$(dirname "$0")/.." || exit 1
+CDPATH= cd "$(dirname "$0")/.." || exit 1
 repo=$(pwd)
 
 if [ -t 1 ]; then
@@ -42,7 +42,7 @@ EXCL="! -path */.git/* ! -path */doas/* ! -path */local.d/* ! -path */libinput/*
 die()  { printf "  ${R}✗${N}  %s\n" "$1"; exit 1; }
 ok()   { printf "  ${G}✓${N}  %s\n" "$1"; }
 warn() { printf "  ${Y}⚠${N}  %s\n" "$1"; }
-head() { printf "  ${B}${C}─── %s ───${N}\n" "$1"; }
+section() { printf "  ${B}${C}─── %s ───${N}\n" "$1"; }
 
 need_root() {
     [ "$(id -u)" = 0 ] || { warn "run: ${B}doas $0 $1${N}"; exit 1; }
@@ -60,7 +60,7 @@ pkg_files() {
 # ─────────────────────────────────────────────────────────────
 
 do_install() {
-    head "installing"
+    section "installing"
     depth="-mindepth 2"
     target="$repo"
     [ -n "$1" ] && { target="$repo/$1"; depth="-mindepth 0"; }
@@ -83,7 +83,7 @@ do_install() {
 }
 
 do_uninstall() {
-    head "removing"
+    section "removing"
     set -f
     for f in $(pkg_files); do
         rel="${f#$repo/}"; dest="$HOME/${rel#*/}"
@@ -136,7 +136,7 @@ do_list() {
 }
 
 do_clean() {
-    head "cleaning broken symlinks"
+    section "cleaning broken symlinks"
     set -f
     for l in $(find "$HOME" -maxdepth 4 -type l ! -exec test -e {} \; -print 2>/dev/null); do
         case "$l" in "$HOME/.config/opencode"*) continue ;; esac
@@ -159,7 +159,7 @@ do_deps() {
     else die "unknown package manager"
     fi
     
-    head "packages ($pm)"
+    section "packages ($pm)"
     $cmd $DEPS && ok "done"
 }
 
@@ -172,7 +172,7 @@ do_services() {
     else die "unknown init system"
     fi
     
-    head "services ($init)"
+    section "services ($init)"
     for svc in $SERVICES; do
         $enable "$svc" >/dev/null 2>&1 && ok "$svc" || warn "$svc"
     done
@@ -180,20 +180,24 @@ do_services() {
 
 do_doas() {
     [ -f "$repo/doas/doas.conf" ] || die "doas.conf not found"
-    head "/etc/doas.conf"
-    
+
+    # Alpine doas also reads /etc/doas.d/*.conf and the last matching rule
+    # wins, so a stray drop-in can silently override doas.conf. Remove them
+    # to keep doas.conf the single source of truth.
     if command -v doas >/dev/null && [ -f /etc/doas.conf ]; then
         doas install -m 0644 "$repo/doas/doas.conf" /etc/doas.conf
+        doas rm -f /etc/doas.d/*.conf
     else
         warn "bootstrap (su)"
         su root -c "install -m 0644 '$repo/doas/doas.conf' /etc/doas.conf"
+        su root -c "rm -f /etc/doas.d/*.conf"
     fi
     ok "installed"
 }
 
 do_locald() {
     [ -d "$repo/local.d" ] || die "local.d not found"
-    head "/etc/local.d"
+    section "/etc/local.d"
     
     if command -v doas >/dev/null; then
         doas mkdir -p /etc/local.d
@@ -207,7 +211,7 @@ do_locald() {
 
 do_libinput() {
     [ -f "$repo/libinput/local-overrides.quirks" ] || die "libinput quirks not found"
-    head "/etc/libinput/local-overrides.quirks"
+    section "/etc/libinput/local-overrides.quirks"
 
     if command -v doas >/dev/null; then
         doas mkdir -p /etc/libinput
@@ -220,7 +224,7 @@ do_libinput() {
 }
 
 do_services_list() {
-    head "configured services"
+    section "configured services"
     for svc in $SERVICES; do
         printf "  %s\n" "$svc"
     done
@@ -228,7 +232,7 @@ do_services_list() {
 
 do_iosevka() {
     need_root iosevka
-    head "Iosevka Term Nerd Font"
+    section "Iosevka Term Nerd Font"
     fonts="/usr/local/share/fonts/iosevkaterm"
     mkdir -p "$fonts"
     
@@ -246,7 +250,7 @@ do_iosevka() {
 
 do_zrwm() {
     need_root zrwm-build
-    head "zrwm"
+    section "zrwm"
 
     # doas/sudo may run as root; use the invoking user's home for the fork
     user="${DOAS_USER:-${SUDO_USER:-$(id -un)}}"
@@ -270,7 +274,7 @@ do_zrwm() {
 
 do_mew() {
     need_root mew-build
-    head "mew"
+    section "mew"
     
     rm -rf /tmp/mew
     git clone --depth 1 git@github.com:Arthur-Gusmao/mew /tmp/mew || die "clone failed"
@@ -302,7 +306,6 @@ case "${1:-help}" in
     services         enable services (run as root)
     services-list    list configured services
     system-install   install doas.conf + local.d + libinput quirks
-    libinput-install install libinput quirks
 
   ${B}extras${N}
     iosevka          install Iosevka Nerd Font
@@ -324,9 +327,6 @@ EOF
     services)     do_services ;;
     services-list) do_services_list ;;
     system-install) do_doas; do_locald; do_libinput ;;
-    doas-install) do_doas ;;
-    locald-install) do_locald ;;
-    libinput-install) do_libinput ;;
     
     iosevka)      do_iosevka ;;
     opencode)     curl -fsSL https://opencode.ai/install | sh ;;
@@ -334,7 +334,7 @@ EOF
     mew-build)    do_mew ;;
     
     bootstrap)    do_deps; do_install; do_services; ok "bootstrap complete" ;;
-    update)       head "update"; git pull --ff-only; do_uninstall; do_install; ok "done" ;;
+    update)       section "update"; git pull --ff-only; do_uninstall; do_install; ok "done" ;;
     
     *)  [ -d "$repo/$1" ] && { do_install "$1"; exit 0; }
         die "unknown: $1"

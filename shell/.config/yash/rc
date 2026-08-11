@@ -1,19 +1,19 @@
 #!/bin/sh
 
-if [ -f /etc/yashrc ]; then
-  . /etc/yashrc
-fi
+# ─── line editing (was sourced from /etc/yashrc on Alpine) ──────────
+bindkey -e '^[[1;5D' backward-emacsword
+bindkey -e '^[[1;5C' forward-emacsword
 
-if [ -f ~/.profile ]; then
-  . ~/.profile
-fi
-# ---------------------------------------------------------------------------
-# yash history format is incompatible with mksh/bash, so keep a separate file
+# ─── interactive env (PATH/env come from ~/.profile via login) ──────
 HISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/yash/history"
 mkdir -p "${HISTFILE%/*}"
 umask 022
-export CDPATH=".:$HOME:$HOME/Projects"
-# ---------------------------------------------------------------------------
+# Leading ":" = null entry = current dir (same as "." but WITHOUT the
+# POSIX print of the resolved path). Don't export: cd only needs it as
+# a shell variable and exporting leaks it into child scripts.
+CDPATH=":$HOME:$HOME/Projects"
+
+# ─── options ─────────────────────────────────────────────────────────
 set -o emacs
 set -o ignoreeof
 set -o pipefail
@@ -21,64 +21,29 @@ set -o markdirs
 set -o histspace
 set -o notify-le
 set -o le-no-conv-meta
-# yash extensions (off by default)
 set -o brace-expand
 set -o extended-glob
-# command line prediction (fish-style autosuggestions from history)
 set -o le-predict
 #set -o le-predict-empty
 export HISTRMDUP=1
-# ---------------------------------------------------------------------------
-# Native yash prompt notation (\f<specs>. sets font/colors; \fd. resets).
-# Pure-style prompt: line 1 = dir + git info, line 2 = ❯ (green/red by status).
-# PS1S styles the typed input, PS1P the predicted (autosuggest) part.
+
+# ─── prompt ──────────────────────────────────────────────────────────
+# \fNN. = yash color escape; must be a LITERAL backslash (\\f in printf
+# — printf's \f alone is a form feed that mangles the prompt).
 export PS1S='\fwt.'
 export PS1P='\fct.'
 _prompt_line() {
-    typeset st d g first br stxt ah bd
-    st="$1"
-    d=${PWD#"$HOME"}
-    [ "$d" = "$PWD" ] && d="$PWD" || d="~$d"
-    if [ ${#d} -gt 40 ]; then
-        d="...${d#"${d%????????????????????????????????????}"}"
-    fi
+    case $PWD in
+        "$HOME"|"$HOME"/*) d="~${PWD#"$HOME"}" ;;
+        *) d="$PWD" ;;
+    esac
     printf '\\fbt.%s' "$d"
-    g=$(git status --branch --porcelain 2>/dev/null)
-    if [ -n "$g" ]; then
-        first=${g%%$'\n'*}
-        case $first in
-        '## '*)
-            br=${first#'## '}
-            br=${br%%...*}
-            case $br in
-            *'HEAD'*|*'No commits yet on'*) ;;
-            *)
-                printf ' \\fyt.%s' "$br"
-                case $g in
-                *$'\n'UU\ *) printf '\\frt.✗' ;;
-                *$'\n'*)      printf '\\frt.*' ;;
-                esac
-                stxt=${first#*...}
-                case $stxt in
-                *'ahead '*)
-                    ah=${stxt##*ahead }
-                    ah=${ah%%,*}
-                    printf '\\fct.↑%s' "$ah"
-                    ;;
-                esac
-                case $stxt in
-                *'behind '*)
-                    bd=${stxt##*behind }
-                    bd=${bd%%]*}
-                    printf '\\fct.↓%s' "$bd"
-                    ;;
-                esac
-                ;;
-            esac
-            ;;
-        esac
+    br=$(git branch --show-current 2>/dev/null)
+    if [ -n "$br" ]; then
+        printf ' \\fyt.%s' "$br"
+        [ -n "$(git status --porcelain 2>/dev/null)" ] && printf '\\frt.*'
     fi
-    if [ "$st" = 0 ]; then
+    if [ "$1" = 0 ]; then
         printf ' \\fgt.❯\\fd. '
     else
         printf ' \\frt.❯\\fd. '
@@ -86,7 +51,6 @@ _prompt_line() {
 }
 PS1='$(_prompt_line $?)'
 PS2='> '
-# ---------------------------------------------------------------------------
 alias g='grep'
 alias l='$PAGER'
 alias --global L='|$PAGER'
@@ -114,11 +78,3 @@ up() {
     cd "$p"
 }
 # ---------------------------------------------------------------------------
-# autocd: typing a directory name changes into it (official yash idiom)
-_autocd()
-if [ -d "$1" ]; then
-  HANDLED=true
-  cd -- "$@"
-  break -i
-fi
-COMMAND_NOT_FOUND_HANDLER=("$COMMAND_NOT_FOUND_HANDLER" '_autocd "$@"')

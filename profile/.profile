@@ -9,12 +9,8 @@ case ":$PATH:" in
     *":/usr/sbin:"*) ;;
     *) export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin${PATH:+:$PATH}" ;;
 esac
-for d in "$HOME/.local/bin" "$HOME/.opencode/bin" "$HOME/bin" "$HOME/.local/share/cargo/bin"; do
-    case ":$PATH:" in
-        *":$d:"*) ;;
-        *) export PATH="$d:$PATH" ;;
-    esac
-done
+PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/bin:$HOME/.local/share/cargo/bin:$PATH"
+export PATH
 
 # ─── locale ──────────────────────────────────────────────────────────
 # /etc/profile.d/20locale.sh is skipped too
@@ -30,19 +26,11 @@ export XDG_DATA_DIRS="$XDG_DATA_HOME/flatpak/exports/share:/var/lib/flatpak/expo
 export XDG_CONFIG_DIRS="/etc/xdg"
 mkdir -p "$XDG_STATE_HOME/less"
 
-if test -z "${XDG_RUNTIME_DIR}"; then
+if [ -z "${XDG_RUNTIME_DIR}" ]; then
     export XDG_RUNTIME_DIR="/run/user/$(id -ru)"
 fi
-if test -d "$XDG_RUNTIME_DIR"; then
-  perms="$(stat -c '%a %u' "${XDG_RUNTIME_DIR}")"
-  if [ "${perms}" != "700 $(id -ru)" ]; then
-    unset XDG_RUNTIME_DIR
-    echo "WARNING! XDG_RUNTIME_DIR has incorrect permissions"
-  fi
-else
-  mkdir -p "${XDG_RUNTIME_DIR}"
-  chmod 0700 "${XDG_RUNTIME_DIR}"
-fi
+mkdir -p "${XDG_RUNTIME_DIR}" 2>/dev/null
+chmod 0700 "${XDG_RUNTIME_DIR}" 2>/dev/null
 
 export CC=cc
 export CFLAGS="-O2 -pipe"
