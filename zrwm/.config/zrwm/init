@@ -13,7 +13,7 @@ zrwm-msg clear-binds
 zrwm-msg bind $modkey,shift Return spawn footclient
 zrwm-msg bind $modkey p spawn mew-run -b
 zrwm-msg bind $modkey Escape spawn waylock -init-color 0x282828 -input-color 0x83a598 -fail-color 0xfb4934
-zrwm-msg bind $modkey,shift s spawn 'grim -g "$(slurp)" - | wl-copy'
+zrwm-msg bind $modkey,shift s spawn screenshot
 
 # ─── scratchpad ─── (classic river)
 scratch_tag=$((1 << 20))
