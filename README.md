@@ -56,7 +56,7 @@ A single POSIX `sh` script handles everything:
 ```
 bin/dotfiles   →  CLI: install, uninstall, status, list, relink, clean,
                   deps, services, bootstrap, update, system-install,
-                  iosevka, opencode, zrwm-build
+                  iosevka, plan9-cursor, opencode, zrwm-build
 ```
 
 No Makefile, no justfile, no plan9port — zero dependencies beyond `sh`.
@@ -82,6 +82,7 @@ files is a package. No need to register new ones.
 | `bin/dotfiles services-list` | List configured services |
 | `bin/dotfiles system-install` | Install `/etc/doas.conf` + `/etc/local.d/*` |
 | `bin/dotfiles iosevka` | Install Iosevka Term Nerd Font |
+| `bin/dotfiles plan9-cursor` | Install plan9 cursor theme |
 | `bin/dotfiles opencode` | Install opencode |
 | `bin/dotfiles zrwm-build` | Build & install zrwm from source |
 | `bin/dotfiles mew-build` | Build & install mew from source |

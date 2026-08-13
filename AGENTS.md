@@ -63,6 +63,7 @@
 | `bin/dotfiles system-install` | Install `/etc/doas.conf` + `/etc/local.d/*` |
 | `bin/dotfiles clean` | Remove broken symlinks from `$HOME` |
 | `bin/dotfiles iosevka` | Install Iosevka Term Nerd Font |
+| `bin/dotfiles plan9-cursor` | Install plan9 cursor theme (system-wide) |
 | `bin/dotfiles opencode` | Install opencode via curl pipe |
 | `bin/dotfiles zrwm-build` | Build & install zrwm from source |
 | `bin/dotfiles mew-build` | Build & install mew from source |

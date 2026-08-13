@@ -87,7 +87,7 @@ zrwm-msg input-rule -tap-to-click 1
 zrwm-msg borderpx 1
 zrwm-msg bordercolor 665c54ff
 zrwm-msg focuscolor 83a598ff
-#zrwm-msg setcursor plan9 24
+zrwm-msg setcursor plan9 24
 
 # ─── rules ───
 zrwm-msg rule-add -appid steam -float -inverse_title Steam

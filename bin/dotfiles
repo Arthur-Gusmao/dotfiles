@@ -248,6 +248,26 @@ do_iosevka() {
     ok "installed → $fonts"
 }
 
+do_plan9cursor() {
+    need_root plan9-cursor
+    section "plan9 cursor theme"
+    dir="/usr/share/icons/plan9"
+
+    printf "  ${D}downloading...${N}\n"
+    rm -rf /tmp/xcursor-plan9
+    git clone --depth 1 https://github.com/wintermute-cell/xcursor-plan9 /tmp/xcursor-plan9 \
+        || die "clone failed"
+
+    printf "  ${D}installing...${N}\n"
+    mkdir -p "$dir"
+    install -m 0644 /tmp/xcursor-plan9/index.theme "$dir/index.theme"
+    cp -r /tmp/xcursor-plan9/cursors "$dir/"
+    chmod -R a+rX "$dir"
+    rm -rf /tmp/xcursor-plan9
+
+    ok "installed → $dir"
+}
+
 do_zrwm() {
     need_root zrwm-build
     section "zrwm"
@@ -309,6 +329,7 @@ case "${1:-help}" in
 
   ${B}extras${N}
     iosevka          install Iosevka Nerd Font
+    plan9-cursor     install plan9 cursor theme
     zrwm-build       build zrwm from source
     mew-build        build mew from source
     bootstrap        deps + install + services
@@ -329,6 +350,7 @@ EOF
     system-install) do_doas; do_locald; do_libinput ;;
     
     iosevka)      do_iosevka ;;
+    plan9-cursor) do_plan9cursor ;;
     opencode)     curl -fsSL https://opencode.ai/install | sh ;;
     zrwm-build)   do_zrwm ;;
     mew-build)    do_mew ;;

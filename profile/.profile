@@ -78,5 +78,11 @@ export SDL_VIDEODRIVER=wayland
 export _JAVA_AWT_WM_NONREPARENTING=1
 export GDK_BACKEND=wayland
 
+# ─── cursor theme ──────────────────────────────────────────────────
+# wlroots (zrwm), Qt, and XWayland all read XCURSOR_THEME; GTK reads
+# gtk-cursor-theme-name from settings.ini.
+export XCURSOR_THEME=plan9
+export XCURSOR_SIZE=24
+
 # ─── secrets (unversioned) ───────────────────────────────────────────
 [ -f "$HOME/.secrets" ] && . "$HOME/.secrets"
