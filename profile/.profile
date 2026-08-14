@@ -9,7 +9,7 @@ case ":$PATH:" in
     *":/usr/sbin:"*) ;;
     *) export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin${PATH:+:$PATH}" ;;
 esac
-PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/bin:$HOME/.local/share/cargo/bin:$PATH"
+PATH="$HOME/.local/bin:$HOME/go/bin:$HOME/.opencode/bin:$HOME/bin:$HOME/.local/share/cargo/bin:$PATH"
 export PATH
 
 # ─── plan9port ───────────────────────────────────────────────────────
@@ -49,12 +49,23 @@ command -v nproc >/dev/null 2>&1 && export MAKEFLAGS="-j$(nproc)"
 export NINJA_STATUS="[36;1m[%e (s): %s/%t][0m "
 
 # ─── default programs ────────────────────────────────────────────────
-export EDITOR=kak
-export VISUAL=kak
-export FCEDIT=kak
+# Plumb files instead of starting new editor.
+export EDITOR=E
+unset FCEDIT VISUAL
+
+# Get rid of backspace characters in Unix man output.
+#PAGER=nobs
+
+# Equivalent variables for rc(1).
+home=$HOME
+prompt="$H=;          "
+user=$USER
+
+#export VISUAL=kak
+#export FCEDIT=kak
 export TERMINAL=foot
 export BROWSER=librewolf
-export PAGER=less
+export PAGER=nobs
 export MANPAGER="$PAGER"
 
 # ─── pager / history ─────────────────────────────────────────────────

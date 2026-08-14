@@ -15,6 +15,10 @@ zrwm-msg bind $modkey p spawn mew-run -b
 zrwm-msg bind $modkey Escape spawn waylock -init-color 0x282828 -input-color 0x83a598 -fail-color 0xfb4934
 zrwm-msg bind $modkey,shift s spawn screenshot
 
+# ─── plan9 / acme ───
+zrwm-msg bind $modkey e spawn acme
+zrwm-msg bind $modkey,shift e spawn 9 win
+
 # ─── scratchpad ─── (classic river)
 scratch_tag=$((1 << 20))
 all_but_scratch_tag=$(( ((1 << 32) - 1) ^ $scratch_tag ))
