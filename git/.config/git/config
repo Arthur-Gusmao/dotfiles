@@ -3,7 +3,7 @@
 	email = arthurgusmao@disroot.org
 
 [core]
-	editor = kak
+	editor = E
 	autocrlf = input
 	pager = less -R
 
