@@ -8,7 +8,7 @@ wlr-randr --output DP-1 --mode 1920x1080@100Hz &
 foot --server &
 fnott &
 
-wayidle -t 300 zrwm-msg spawn 'waylock -init-color 0x282828 -input-color 0x83a598 -fail-color 0xfb4934' &
+wayidle -t 300 zrwm-msg spawn 'waylock -init-color 0xfbf1c7 -input-color 0x458588 -fail-color 0xcc241d' &
 wayidle -t 600 wlopm --off DP-1 resume wlopm --on DP-1 &
 
 openrc --user gui &

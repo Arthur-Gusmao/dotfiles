@@ -28,26 +28,20 @@ set -o le-predict
 export HISTRMDUP=1
 
 # ─── prompt ──────────────────────────────────────────────────────────
-# \fNN. = yash color escape; must be a LITERAL backslash (\\f in printf
-# — printf's \f alone is a form feed that mangles the prompt).
-export PS1S='\fwt.'
-export PS1P='\fct.'
+export PS1S=' % '
+export PS1P=' % '
 _prompt_line() {
     case $PWD in
         "$HOME"|"$HOME"/*) d="~${PWD#"$HOME"}" ;;
         *) d="$PWD" ;;
     esac
-    printf '\\fbt.%s' "$d"
+    printf '%s' "$d"
     br=$(git branch --show-current 2>/dev/null)
     if [ -n "$br" ]; then
-        printf ' \\fyt.%s' "$br"
-        [ -n "$(git status --porcelain 2>/dev/null)" ] && printf '\\frt.*'
+        printf ' %s' "$br"
+        [ -n "$(git status --porcelain 2>/dev/null)" ] && printf '*'
     fi
-    if [ "$1" = 0 ]; then
-        printf ' \\fgt.❯\\fd. '
-    else
-        printf ' \\frt.❯\\fd. '
-    fi
+    printf ' %% '
 }
 PS1='$(_prompt_line $?)'
 PS2='> '

@@ -12,7 +12,7 @@ zrwm-msg clear-binds
 # ─── launchers ───
 zrwm-msg bind $modkey,shift Return spawn footclient
 zrwm-msg bind $modkey p spawn mew-run -b
-zrwm-msg bind $modkey Escape spawn waylock -init-color 0x282828 -input-color 0x83a598 -fail-color 0xfb4934
+zrwm-msg bind $modkey Escape spawn waylock -init-color 0xfbf1c7 -input-color 0x458588 -fail-color 0xcc241d
 zrwm-msg bind $modkey,shift s spawn screenshot
 
 # ─── plan9 / acme ───
@@ -89,8 +89,8 @@ zrwm-msg input-rule -tap-to-click 1
 
 # ─── appearance ───
 zrwm-msg borderpx 1
-zrwm-msg bordercolor 665c54ff
-zrwm-msg focuscolor 83a598ff
+zrwm-msg bordercolor d5c4a1ff
+zrwm-msg focuscolor 458588ff
 zrwm-msg setcursor plan9 24
 
 # ─── rules ───

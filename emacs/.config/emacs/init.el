@@ -148,7 +148,7 @@
   (doom-themes-enable-bold t)
   (doom-themes-enable-italic t)
   :config
-  (load-theme 'doom-gruvbox t)
+  (load-theme 'doom-gruvbox-light t)
 
   (doom-themes-visual-bell-config)
   (doom-themes-org-config))

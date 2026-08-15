@@ -1,4 +1,4 @@
-# qutebrowser config — gruvbox, privacy, vis editor
+# qutebrowser config — gruvbox light, privacy, vis editor
 import os
 
 config.load_autoconfig(False)
@@ -80,42 +80,42 @@ config.set("colors.webpage.darkmode.enabled", False, "file://*")
 c.colors.webpage.darkmode.algorithm = "lightness-cielab"
 c.colors.webpage.darkmode.policy.images = "never"
 
-# ─── gruvbox ─────────────────────────────────────────────────────────
-c.colors.completion.fg = ["#ebdbb2", "#ebdbb2", "#ebdbb2"]
-c.colors.completion.odd.bg = "#282828"
-c.colors.completion.even.bg = "#3c3836"
-c.colors.completion.category.fg = "#fabd2f"
+# ─── gruvbox light ─────────────────────────────────────────────────
+c.colors.completion.fg = ["#282828", "#282828", "#282828"]
+c.colors.completion.odd.bg = "#fbf1c7"
+c.colors.completion.even.bg = "#ebdbb2"
+c.colors.completion.category.fg = "#b57614"
 c.colors.completion.category.bg = (
-    "qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #282828, stop:1 #3c3836)"
+    "qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #fbf1c7, stop:1 #ebdbb2)"
 )
-c.colors.completion.category.border.top = "#504945"
-c.colors.completion.category.border.bottom = "#504945"
-c.colors.completion.item.selected.fg = "#282828"
-c.colors.completion.item.selected.bg = "#fabd2f"
-c.colors.completion.item.selected.match.fg = "#83a598"
-c.colors.completion.match.fg = "#83a598"
-c.colors.completion.scrollbar.fg = "#ebdbb2"
-c.colors.downloads.bar.bg = "#282828"
-c.colors.downloads.error.bg = "#fb4934"
-c.colors.hints.fg = "#ebdbb2"
+c.colors.completion.category.border.top = "#d5c4a1"
+c.colors.completion.category.border.bottom = "#d5c4a1"
+c.colors.completion.item.selected.fg = "#fbf1c7"
+c.colors.completion.item.selected.bg = "#b57614"
+c.colors.completion.item.selected.match.fg = "#076678"
+c.colors.completion.match.fg = "#076678"
+c.colors.completion.scrollbar.fg = "#282828"
+c.colors.downloads.bar.bg = "#fbf1c7"
+c.colors.downloads.error.bg = "#cc241d"
+c.colors.hints.fg = "#fbf1c7"
 c.colors.hints.bg = "#282828"
-c.colors.hints.match.fg = "#b8bb26"
-c.colors.messages.info.bg = "#282828"
-c.colors.statusbar.normal.bg = "#282828"
-c.colors.statusbar.insert.fg = "#ebdbb2"
-c.colors.statusbar.insert.bg = "#b8bb26"
-c.colors.statusbar.passthrough.bg = "#83a598"
-c.colors.statusbar.command.bg = "#282828"
-c.colors.statusbar.url.warn.fg = "#fe8019"
-c.colors.tabs.bar.bg = "#1d2021"
-c.colors.tabs.odd.bg = "#282828"
-c.colors.tabs.even.bg = "#282828"
-c.colors.tabs.selected.odd.bg = "#3c3836"
-c.colors.tabs.selected.even.bg = "#3c3836"
-c.colors.tabs.pinned.odd.bg = "#b8bb26"
-c.colors.tabs.pinned.even.bg = "#b8bb26"
-c.colors.tabs.pinned.selected.odd.bg = "#3c3836"
-c.colors.tabs.pinned.selected.even.bg = "#3c3836"
+c.colors.hints.match.fg = "#98971a"
+c.colors.messages.info.bg = "#fbf1c7"
+c.colors.statusbar.normal.bg = "#fbf1c7"
+c.colors.statusbar.insert.fg = "#fbf1c7"
+c.colors.statusbar.insert.bg = "#98971a"
+c.colors.statusbar.passthrough.bg = "#458588"
+c.colors.statusbar.command.bg = "#fbf1c7"
+c.colors.statusbar.url.warn.fg = "#af3a03"
+c.colors.tabs.bar.bg = "#fbf1c7"
+c.colors.tabs.odd.bg = "#fbf1c7"
+c.colors.tabs.even.bg = "#fbf1c7"
+c.colors.tabs.selected.odd.bg = "#ebdbb2"
+c.colors.tabs.selected.even.bg = "#ebdbb2"
+c.colors.tabs.pinned.odd.bg = "#98971a"
+c.colors.tabs.pinned.even.bg = "#98971a"
+c.colors.tabs.pinned.selected.odd.bg = "#ebdbb2"
+c.colors.tabs.pinned.selected.even.bg = "#ebdbb2"
 
 # ─── fonts ───────────────────────────────────────────────────────────
 c.fonts.default_family = '"IosevkaTerm Nerd Font"'

@@ -2,7 +2,7 @@
 -- For the Vis text editor by Marc Tanner (https://github.com/martanne)
 
 -- Set to 'dark' or 'light'
-local mode  = 'dark'
+local mode  = 'light'
 -- Set to 'hard', 'medium', or 'soft'
 local contrast  = 'medium'
 
@@ -14,7 +14,7 @@ local gruvbox = {
 	dark2 = '#504945',
 	dark3 = '#665c54',
 	dark4 = '#7c6f64',
-	light0h = '$f9f5d7',
+	light0h = '#f9f5d7',
 	light0  = '#fbf1c7',
 	light0s = '#f2e5bc',
 	light1  = '#ebdbb2',
