@@ -3,4 +3,15 @@
 fontsrv &
 sleep 1
 
-exec 9 acme -f /mnt/font/IosevkaTermNFM/14a/font
+acme_plumber_rules="$acme_bin_dir/../plumbing"
+
+if [ "$(pgrep plumber)" ]; then
+	echo plumber is running
+else
+	echo starting plumber
+	plumber
+	cat "$acme_plumber_rules" "$PLAN9/plumb/basic" | 9p write plumb/rules
+fi
+
+
+exec 9 acme -a -f /mnt/font/IosevkaTermNFM/14a/font
