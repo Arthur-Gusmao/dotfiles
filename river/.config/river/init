@@ -2,7 +2,7 @@
 
 dbus-update-activation-environment --systemd --all
 
-[ -f "$HOME/Wallpapers/cabin.png" ] && wbg "$HOME/Wallpapers/cabin.png" &
+[ -f "$HOME/Wallpapers/powyee.png" ] && wbg "$HOME/Wallpapers/powyee.png" &
 
 wlr-randr --output DP-1 --mode 1920x1080@100Hz &
 foot --server &

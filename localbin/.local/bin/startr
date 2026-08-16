@@ -3,4 +3,4 @@
 export XDG_CURRENT_DESKTOP=river
 export XDG_SESSION_TYPE=wayland
 
-exec dbus-run-session -- river
+exec dbus-run-session -- river 2>&1 | tee /tmp/river.log

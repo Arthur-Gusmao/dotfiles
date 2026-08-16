@@ -28,6 +28,8 @@ set -o le-predict
 export HISTRMDUP=1
 
 # ─── prompt ──────────────────────────────────────────────────────────
+export PS1S='\fw.'
+export PS1P='\fg.'
 _prompt_line() {
     case $PWD in
         "$HOME"|"$HOME"/*) d="~${PWD#"$HOME"}" ;;
