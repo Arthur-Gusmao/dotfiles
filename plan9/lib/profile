@@ -1,0 +1,82 @@
+# ~/lib/profile — plan9port rc login + interactive startup
+#
+# Sourced by "rc -l" before reading input.
+# Equivalent to ~/.profile for POSIX sh.
+
+# ─── plan9port rc variables (must come first for ~ expansion) ─
+home=$HOME
+user=$USER
+
+# ─── path / toolchain ────────────────────────────────────────
+if (! ~ $path */usr/sbin*) {
+    path=(/usr/local/sbin /usr/local/bin /usr/sbin /usr/bin /sbin /bin $path)
+}
+path=($home/.local/bin $home/go/bin $home/.opencode/bin $home/bin $home/.local/share/cargo/bin $path)
+
+# ─── plan9port ───────────────────────────────────────────────
+if (test -d /usr/lib/plan9/bin) {
+    PLAN9=/usr/lib/plan9
+    if (! ~ $path */usr/lib/plan9/bin*) {
+        path=($path /usr/lib/plan9/bin)
+    }
+}
+
+# ─── locale ──────────────────────────────────────────────────
+~ $LANG '' && LANG=C.UTF-8
+~ $LC_COLLATE '' && LC_COLLATE=C
+
+# ─── XDG base dirs ───────────────────────────────────────────
+XDG_CONFIG_HOME=$home/.config
+XDG_DATA_HOME=$home/.local/share
+XDG_CACHE_HOME=$home/.cache
+XDG_STATE_HOME=$home/.local/state
+XDG_CONFIG_DIRS=/etc/xdg
+mkdir -p $XDG_STATE_HOME/less
+
+if (~ $XDG_RUNTIME_DIR '') {
+    XDG_RUNTIME_DIR=/run/user/`{id -ru}
+    mkdir -p $XDG_RUNTIME_DIR
+    chmod 0700 $XDG_RUNTIME_DIR
+}
+
+CC=cc
+CFLAGS='-O2 -pipe'
+test -x /usr/bin/nproc && MAKEFLAGS=-j^`{nproc}
+
+# ─── default programs ────────────────────────────────────────
+EDITOR=E
+TERMINAL=foot
+BROWSER=librewolf
+PAGER=nobs
+MANPAGER=$PAGER
+
+# ─── prompt ──────────────────────────────────────────────────
+prompt=('% ' '> ')
+
+# ─── pager / history ─────────────────────────────────────────
+LESS=-MSFR
+LESSHISTFILE=$XDG_STATE_HOME/less/history
+HISTSIZE=2047
+
+# ─── git ─────────────────────────────────────────────────────
+GIT_SSH=dbclient
+
+# ─── tool XDG cleanup ────────────────────────────────────────
+CARGO_HOME=$XDG_DATA_HOME/cargo
+RUSTUP_HOME=$XDG_DATA_HOME/rustup
+
+# ─── session / wayland ───────────────────────────────────────
+XDG_SESSION_TYPE=wayland
+QT_QPA_PLATFORM=wayland
+QTWEBENGINE_FORCE_USE_GBM=0
+MOZ_ENABLE_WAYLAND=1
+SDL_VIDEODRIVER=wayland
+_JAVA_AWT_WM_NONREPARENTING=1
+GDK_BACKEND=wayland
+
+# ─── cursor theme ────────────────────────────────────────────
+XCURSOR_THEME=plan9
+XCURSOR_SIZE=24
+
+# ─── secrets (unversioned) ───────────────────────────────────
+test -f $home/.secrets && . $home/.secrets
