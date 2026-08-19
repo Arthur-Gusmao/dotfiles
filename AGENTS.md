@@ -33,8 +33,8 @@
 - **ANSI color codes inline**: `\033[1m` etc. No external tools.
 - **Emoji**: ✓ ✗ ⚠ ─── for status indicators.
 - **POSIX sh only**: `#!/bin/sh -e`, no bashisms.
-- **No RC files** (no `.bashrc`, `.zshrc`). The `shell/` package provides `~/.config/yash/{rc,profile}` for shell init.
-- `~/.profile` (from `profile/`) is the single POSIX login profile. yash never reads it automatically, so `~/.config/yash/profile` is a shim that sources it. The interactive rc does NOT source it — interactive shells inherit the environment from the session (spawned from a login shell). PATH is a plain prepend, no idempotency needed.
+- **No RC files** (no `.bashrc`, `.zshrc`). The `shell/` package provides `~/.config/yash/{rc,profile}` for yash. The `plan9/` package provides `~/lib/profile` for plan9port rc.
+- `~/.profile` (from `profile/`) is the single POSIX login profile. yash never reads it automatically, so `~/.config/yash/profile` is a shim that sources it. plan9port rc reads `~/lib/profile` when invoked as login shell (`rc -l`). The interactive rc does NOT source the profile — interactive shells inherit the environment from the session (spawned from a login shell). PATH is a plain prepend, no idempotency needed.
 - **Wayland is optional**: river, foot, fnott don't define the shell/editor/terminal in a TTY or over SSH.
 
 ## Architecture

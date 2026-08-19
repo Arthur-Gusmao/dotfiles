@@ -14,7 +14,7 @@ fi
 # config
 # ─────────────────────────────────────────────────────────────
 
-DEPS="foot yash tmux kakoune vis qutebrowser librewolf xdg-desktop-portal-gtk
+DEPS="foot yash plan9port tmux kakoune vis qutebrowser librewolf xdg-desktop-portal-gtk
     river zig wayland-dev wlr-randr grim slurp wl-clipboard polkit xdg-desktop-portal-wlr
     wbg waylock wlopm bash fcft-dev pixman-dev pipewire-alsa xdg-desktop-portal
     util-linux shadow build-base libxkbcommon-dev pipewire-webrtc bmake xdg-desktop-portal-dev
