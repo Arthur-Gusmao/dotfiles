@@ -1,5 +1,32 @@
 #!/bin/sh
+
+BG=282828
+PANEL=3c3837
+ACTIVE=458588
+FG=ebdbb2
+GRAY=928374
+AQUA=8ec07c
+
+weekday() {
+	case $1 in
+	1) echo seg ;; 2) echo ter ;; 3) echo qua ;; 4) echo qui ;;
+	5) echo sex ;; 6) echo sáb ;; 7) echo dom ;;
+	esac
+}
+
+month() {
+	case $1 in
+	01) echo jan ;; 02) echo fev ;; 03) echo mar ;; 04) echo abr ;;
+	05) echo mai ;; 06) echo jun ;; 07) echo jul ;; 08) echo ago ;;
+	09) echo set ;; 10) echo out ;; 11) echo nov ;; 12) echo dez ;;
+	esac
+}
+
 while :; do
-        date
-        sleep 1
-done | mojito -b -f "IosevkaTerm Nerd Font-15" -g 1920x24+0+15 -B e6bf8e -Ffffeeb
+	set -- $(date '+%u %m %d %H:%M:%S')
+	line="%{l}%{B$ACTIVE}%{F$BG} $(hostname) %{B-}"
+	line="$line%{c}%{B$ACTIVE}%{F$BG} $4 %{B-}"
+	line="$line%{r}%{B$PANEL}%{F$AQUA} %{F$GRAY}$(weekday $1) %{F$FG}$3 %{F$GRAY}$(month $2)%{B-}"
+	printf '%s\n' "$line"
+	sleep 1
+done | mojito -f "IosevkaTerm Nerd Font-15" -g 1920x24+0+0 -B "$BG" -F "$FG"
