@@ -1,11 +1,11 @@
 #!/bin/sh
 
 BG=282828
-PANEL=3c3837
+PANEL=3c3836
 ACTIVE=458588
 FG=ebdbb2
 GRAY=928374
-AQUA=8ec07c
+GREEN=b8bb26
 
 weekday() {
 	case $1 in
@@ -23,10 +23,10 @@ month() {
 }
 
 while :; do
-	set -- $(date '+%u %m %d %H:%M:%S')
-	line="%{l}%{B$ACTIVE}%{F$BG} $(hostname) %{B-}"
+	set -- $(date '+%u %m %d %H:%M')
+	line="%{l}%{B$ACTIVE}%{F$BG} ${USER:-$(whoami)}@$(hostname) %{B-}"
 	line="$line%{c}%{B$ACTIVE}%{F$BG} $4 %{B-}"
-	line="$line%{r}%{B$PANEL}%{F$AQUA} %{F$GRAY}$(weekday $1) %{F$FG}$3 %{F$GRAY}$(month $2)%{B-}"
+	line="$line%{r}%{B$PANEL}%{F$GRAY} $(weekday $1) %{F$FG}$3 %{F$GRAY}$(month $2) %{B-}"
 	printf '%s\n' "$line"
 	sleep 1
 done | mojito -f "IosevkaTerm Nerd Font-15" -g 1920x24+0+0 -B "$BG" -F "$FG"
