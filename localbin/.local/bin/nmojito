@@ -1,0 +1,5 @@
+#!/bin/sh
+while :; do
+        date
+        sleep 1
+done | mojito -b -f "IosevkaTerm Nerd Font-15" -g 1920x24+0+15 -B e6bf8e -Ffffeeb

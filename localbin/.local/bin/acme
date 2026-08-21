@@ -3,9 +3,9 @@
 acme_plumber_rules="$acme_bin_dir/../plumbing"
 
 if [ "$(pgrep plumber)" ]; then
-	echo plumber is running
+	echo "plumber is running"
 else
-	echo starting plumber
+	echo "starting plumber"
 	plumber
 	cat "$acme_plumber_rules" "$PLAN9/plumb/basic" | 9p write plumb/rules
 fi
